@@ -24,7 +24,6 @@ export default function Footer() {
             <ul>
               <li><a href="https://github.com/ayushsingh82/Onchainstock-near" target="_blank" rel="noreferrer">GitHub</a></li>
               <li><a href="https://github.com/ayushsingh82/Onchainstock-near/blob/main/ARCHITECTURE.md" target="_blank" rel="noreferrer">Architecture</a></li>
-              <li><a href="/logo">Brand and logo</a></li>
             </ul>
           </div>
           <div className="fcol">

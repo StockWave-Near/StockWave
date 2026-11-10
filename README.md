@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./public/brand/stockwave-logo.svg" alt="StockWave logo" width="96" height="96" />
+
 # StockWave
 
 **Send a share like you send a text.**
