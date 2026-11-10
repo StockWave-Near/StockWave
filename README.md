@@ -91,7 +91,8 @@ The bot never holds or sends a claim key. The key exists only in the link the se
 | WhatsApp share link and `POST /api/whatsapp/share` | Done |
 | WhatsApp bot logic and signed webhook | Done, needs a Meta app to go live |
 | Vault contract (Rust) with 14 passing unit tests | Done, testnet deploy pending |
-| Web UI: create page, claim page | Not started |
+| Web UI: landing and gift builder with dry-run preview | Done (creating the link needs sign-in) |
+| Web UI: claim page, funding/status screen | Not started |
 | Browser claim flow and Google login provider | Not started |
 | Backend call to register a funded gift on the vault | Not started |
 | Notebook contract and "Return the favour" | Not started |

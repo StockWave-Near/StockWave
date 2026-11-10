@@ -1,69 +1,43 @@
-import Image from "next/image";
+import GiftBuilder from "@/components/GiftBuilder";
+
+function Sun() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <circle cx="13" cy="13" r="4.5" />
+      {Array.from({ length: 8 }).map((_, i) => {
+        const a = (i * Math.PI) / 4;
+        return <line key={i} x1={13 + Math.cos(a) * 8} y1={13 + Math.sin(a) * 8} x2={13 + Math.cos(a) * 11} y2={13 + Math.sin(a) * 11} />;
+      })}
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="wrap">
+      <nav className="nav">
+        <div className="brand"><Sun /> StockWave</div>
+        <div className="links">
+          <a href="#stocks">Stocks</a>
+          <a href="#how">How it works</a>
+          <a href="#send">Send a gift</a>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <a className="pill" href="#send">Send a gift <span className="arrow">↗</span></a>
+      </nav>
+
+      <section className="hero">
+        <h1>Send a share<br />like you send a text</h1>
+        <p>Give a friend their first stock as a link. They sign in with Google and own a real tokenized share, with no wallet, seed phrase or gas fee.</p>
+        <a className="pill" href="#send">Get started today <span className="arrow">↗</span></a>
+      </section>
+
+      <GiftBuilder />
+
+      <section className="steps" id="how">
+        <div className="step"><b>01</b><h4>Pick a stock</h4><p>Choose Google, Apple or Tesla and an amount. See the price before anything is signed.</p></div>
+        <div className="step"><b>02</b><h4>Share the link</h4><p>Send it on WhatsApp or anywhere. The claim key stays in the link, so StockWave never holds it.</p></div>
+        <div className="step"><b>03</b><h4>They claim it</h4><p>Your friend signs in with Google and taps Claim. We pay the network fee.</p></div>
+      </section>
+    </main>
   );
 }

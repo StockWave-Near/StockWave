@@ -15,7 +15,7 @@ Status: `[x]` done, `[ ]` todo.
 - [x] 1Click client (`src/lib/oneclick.ts`), `/api/tokens`, `/api/status`
 - [x] `/api/quote` (dry quote, server computes amounts) done; real quote lives in `/api/gift`
 - [x] `/api/gift` + `/api/gift/[id]` done (in-memory store, swap for KV; no private key stored)
-- [ ] Create flow UI `/`: stock picker, amount, note, dry-run preview ("you pay X, they get Y")
+- [x] Landing + builder UI `/` (forest-quiet glass style): stock cards, amount chips, note, region confirm, dry-run preview. Create-link button still needs sign-in
 - [ ] Funding + status polling UI, then show the gift link
 - [ ] Claim page `/g/[id]`: read `#k` locally, Google login, claim button, success screen
 - [ ] Social login provider that yields an ed25519 key (Web3Auth/Privy, check NEAR support)
