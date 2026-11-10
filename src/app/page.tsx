@@ -35,7 +35,7 @@ export default function Home() {
           <a href="#why">Why StockWave</a>
           <a href="#faq">FAQ</a>
         </div>
-        <a className="pill" href="#send">Send a gift <span className="arrow">↗</span></a>
+        <a className="pill" href="#send">Send a gift</a>
       </nav>
 
       <section className="hero">
@@ -104,7 +104,7 @@ export default function Home() {
 
       <section className="cta">
         <h2 className="h2">Give someone their first stock today</h2>
-        <a className="pill" href="#send">Send a gift <span className="arrow">↗</span></a>
+        <a className="pill" href="#send">Send a gift</a>
       </section>
 
     </main>
