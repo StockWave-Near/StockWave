@@ -1,11 +1,12 @@
 "use client";
 
+import StockIcon from "./StockIcon";
 import { useState } from "react";
 
 const STOCKS = [
-  { key: "GOOGL", name: "Google", sub: "Alphabet Class A", letter: "G" },
-  { key: "AAPL", name: "Apple", sub: "Apple Inc.", letter: "A" },
-  { key: "TSLA", name: "Tesla", sub: "Tesla Inc.", letter: "T" },
+  { key: "GOOGL", name: "Google", sub: "Alphabet Class A", logo: "https://cdn.simpleicons.org/google/4285F4", color: "#4285F4" },
+  { key: "AAPL", name: "Apple", sub: "Apple Inc.", logo: "https://cdn.simpleicons.org/apple/1d1d1f", color: "#1d1d1f" },
+  { key: "TSLA", name: "Tesla", sub: "Tesla Inc.", logo: "https://cdn.simpleicons.org/tesla/CC0000", color: "#CC0000" },
 ] as const;
 type Key = (typeof STOCKS)[number]["key"];
 const AMOUNTS = [5, 10, 20, 50];
@@ -62,7 +63,7 @@ export default function GiftBuilder() {
         {STOCKS.map((s) => (
           <button key={s.key} className="card" aria-pressed={stock === s.key} onClick={() => setStock(s.key)}>
             <div>
-              <div className="mark">{s.letter}</div>
+              <StockIcon a={{ logo: s.logo, color: s.color, ticker: s.key, name: s.name }} size={56} />
               <h3>{s.name}</h3>
               <small>{s.sub}</small>
             </div>
@@ -97,7 +98,7 @@ export default function GiftBuilder() {
 
         {result && <div className={`preview ${result.ok ? "" : "err"}`}>{result.text}</div>}
         <p className="fine">
-          Tokenized shares are not a brokerage account. Creating the gift link needs sign-in, which is the next step in the build.
+          Tokenized shares are not a brokerage account.
         </p>
       </section>
     </>
