@@ -9,6 +9,8 @@ export type Gift = {
   usd: number;
   note: string;
   senderAccount: string;
+  /** Recipient WhatsApp number, digits only (E.164 without +). Optional. */
+  recipientPhone?: string;
   claimPublicKey: string;
   depositAddress: string;
   status: "AWAITING_DEPOSIT" | "FUNDED" | "CLAIMED" | "REFUNDED" | "FAILED";
@@ -23,3 +25,7 @@ export const saveGift = (gift: Gift) => void gifts.set(gift.id, gift);
 export const getGift = (id: string) => gifts.get(id);
 export const findByDeposit = (addr: string) =>
   [...gifts.values()].find((x) => x.depositAddress === addr);
+export const giftsForPhone = (phone: string) =>
+  [...gifts.values()]
+    .filter((x) => x.recipientPhone === phone && x.status !== "FAILED")
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));

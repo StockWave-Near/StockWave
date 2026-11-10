@@ -50,3 +50,19 @@ export async function sendGiftTemplate(to: string, link: string, amountLabel: st
   if (!res.ok) throw new Error(`WhatsApp ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return res.json();
 }
+
+// Free-form reply inside the 24h window after the user messaged the bot first.
+export async function sendText(to: string, body: string) {
+  if (!config.waToken || !config.waPhoneId) throw new Error("WhatsApp Cloud API not configured");
+  const res = await fetch(`https://graph.facebook.com/v21.0/${config.waPhoneId}/messages`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${config.waToken}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: to.replace(/\D/g, ""),
+      type: "text",
+      text: { body: body.slice(0, 4000), preview_url: false },
+    }),
+  });
+  if (!res.ok) throw new Error(`WhatsApp ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}

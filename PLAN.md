@@ -1,4 +1,6 @@
-# Moi on NEAR: task list
+# Moi on NEAR: plan and task list (single source of truth)
+
+Working name "Moi" will be renamed; see the naming section at the bottom.
 
 Deadline: **14 Nov 2026, 23:59 UTC**. Design: `ARCHITECTURE.md`. New repo, fresh code (separate from the other hackathon projects).
 Stack: Next.js 16 (`src/app`, route handlers), TypeScript, Tailwind. Read `node_modules/next/dist/docs/` before using Next APIs.
@@ -17,11 +19,24 @@ Status: `[x]` done, `[ ]` todo.
 - [ ] Funding + status polling UI, then show the gift link
 - [ ] Claim page `/g/[id]`: read `#k` locally, Google login, claim button, success screen
 - [ ] Social login provider that yields an ed25519 key (Web3Auth/Privy, check NEAR support)
-- [ ] Claim flow: vault function-call key (section 3b) or escrow + relayer fallback (3c); `/api/relay`
+- [x] Vault contract `contracts/moi-vault` (Rust, near-sdk 5.15.1): register_gift, claim by function-call key, sender reclaim after expiry, pause, token allowlist, failed-payout restore. 14 unit tests pass.
+- [ ] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys
+- [ ] Wire backend: call `register_gift` once a gift is FUNDED (registrar key), `/api/relay` only if the fallback is needed
+- [ ] Claim flow in the browser: sign `claim({recipient})` with the link key
 - [ ] Region gate `/api/eligible` + "not a US/Canada person" declaration
 - [ ] Error and refund states, mobile check
 
 ## Sambit: WhatsApp, link sharing, extras
+
+### WhatsApp bot (simple: onboarding + "who sent me a gift")
+- [x] Bot brain `src/lib/whatsapp-bot.ts`: welcome/onboarding, `gifts` (who sent it, which wallet, amount, status), `stocks`, `help`
+- [x] Webhook `/api/whatsapp/webhook`: Meta handshake, HMAC signature check, replies via `sendText`
+- [x] Gifts can carry an optional `recipientPhone` (`/api/gift`), so the bot can list gifts per number
+- [ ] Set up Meta WhatsApp Business app, verify token, app secret, point webhook at `/api/whatsapp/webhook`
+- [ ] Persist gifts in a real DB (bot is useless after a restart with the in-memory store)
+- [ ] Bot: "link my wallet" (map phone to the NEAR account after Google login) so `gifts` can also match by wallet
+- [ ] Bot: send a "you got a gift" template message when a gift is created for a phone number (needs approved template)
+- [ ] Note: the bot cannot send the claim key (it only lives in the sender's link), so it points people to that link
 
 - [x] Starter code exists: `src/lib/gift-link.ts`, `src/lib/whatsapp.ts`, `/api/whatsapp/share`. Review and extend.
 - [ ] **Share to WhatsApp button** on the gift-created screen: opens `wa.me` link with a ready message (works with no API keys). Also add copy-link and the native share sheet (`navigator.share`).
@@ -42,3 +57,6 @@ Status: `[x]` done, `[ ]` todo.
 
 ## Cut order if behind
 Agent CLI, then return-the-favour, then notebook contract (plain log page), then extra attack tests, then WhatsApp Cloud API (keep wa.me share).
+
+## Naming
+- [ ] Pick the final project name, then rename repo, package, README, UI copy, vault account

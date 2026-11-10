@@ -42,12 +42,14 @@ Why NEAR:
 | Gift link builder and parser, key kept in `#k=` fragment (`src/lib/gift-link.ts`) | done |
 | WhatsApp share link builder `wa.me` and `POST /api/whatsapp/share` | done |
 | WhatsApp Business Cloud API template sender (`sendGiftTemplate`) | code written, needs Meta setup |
-| Architecture doc and task list (`ARCHITECTURE.md`, `TASKS.md`) | done |
+| Vault contract (Rust): register, claim by link key, reclaim, pause, allowlist; 14 unit tests passing | done, testnet deploy pending |
+| Architecture doc and task list (`ARCHITECTURE.md`, `PLAN.md`) | done |
 
 ## What is not done
 
 - UI (create page, claim page): intentionally left for later.
-- Claim flow: vault contract with function-call keys, `/api/relay`, Google login provider that yields a NEAR key.
+- Claim flow in the browser, backend call to `register_gift`, Google login provider that yields a NEAR key.
+- Vault testnet deploy and a check of the Intents `mt_transfer` payout call.
 - Notebook contract and `/notebook` page, "Return the favour".
 - Region gate and eligibility declaration (Ondo restrictions).
 - Real database: gifts are in memory and vanish on restart (`src/lib/store.ts`).
@@ -88,4 +90,4 @@ npm run dev
 ## Docs
 
 - `ARCHITECTURE.md`: full design, fallbacks, security list, build plan, demo plan.
-- `TASKS.md`: who does what (Ayush: UI, API fetching, flow. Sambit: WhatsApp, link sharing, extras).
+- `PLAN.md`: who does what (Ayush: UI, API fetching, flow. Sambit: WhatsApp, link sharing, extras).

@@ -8,5 +8,6 @@ export const config = {
   // WhatsApp Cloud API (optional: wa.me share links work without these)
   waToken: process.env.WHATSAPP_TOKEN ?? "",
   waPhoneId: process.env.WHATSAPP_PHONE_NUMBER_ID ?? "",
+  waAppSecret: process.env.WHATSAPP_APP_SECRET ?? "",
   waVerifyToken: process.env.WHATSAPP_VERIFY_TOKEN ?? "",
 };
