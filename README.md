@@ -95,9 +95,9 @@ The bot never holds or sends a claim key. The key exists only in the link the se
 | Browser claim flow and Google login provider | Not started |
 | Backend call to register a funded gift on the vault | Not started |
 | Notebook contract and "Return the favour" | Not started |
-| Region gate and eligibility declaration | Not started |
+| Region gate (US/CA blocked, declaration required), rate limits, idempotency | Done on the API; UI wording pending |
+| Security test suite (10 tests, `npm test`) | Started |
 | Persistent database (gifts are in memory today) | Not started |
-| Rate limits, idempotency, attack test suite | Not started |
 | Agent CLI (stretch) | Not started |
 
 The working checklist lives in [`PLAN.md`](./PLAN.md).
@@ -138,6 +138,7 @@ PLAN.md               task list and owners
 | `POST /api/quote` | `{ stock: "GOOGL" \| "AAPL" \| "TSLA", usd }` | Dry quote. Amount limits: $2 to $100. |
 | `POST /api/gift` | `{ stock, usd, note?, recipientPhone?, senderAccount, claimPublicKey }` | `{ id, depositAddress, quote }` |
 | `GET /api/gift/[id]` | none | `{ id, stock, name, usd, note, status }` (never returns keys or deposit address) |
+| `GET /api/eligible` | `?declared=1` | `{ eligible, country, reason? }` |
 | `GET /api/status` | `?depositAddress=` | 1Click swap status |
 | `POST /api/whatsapp/share` | `{ link, senderName?, stock?, usd?, phone? }` | `{ url }` for `wa.me` |
 | `GET/POST /api/whatsapp/webhook` | Meta webhook | Handshake and bot replies |

@@ -29,3 +29,9 @@ export const giftsForPhone = (phone: string) =>
   [...gifts.values()]
     .filter((x) => x.recipientPhone === phone && x.status !== "FAILED")
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+// Idempotency: the same Idempotency-Key returns the original response instead of a second gift.
+const gi = globalThis as unknown as { __stockwaveIdem?: Map<string, unknown> };
+const idem = (gi.__stockwaveIdem ??= new Map<string, unknown>());
+export const getIdem = (k: string) => idem.get(k);
+export const setIdem = (k: string, v: unknown) => void idem.set(k, v);

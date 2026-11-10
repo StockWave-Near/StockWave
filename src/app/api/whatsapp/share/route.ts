@@ -1,8 +1,10 @@
+import { clientIp, rateLimit, tooMany } from "@/lib/rate-limit";
 import { whatsappShareUrl } from "@/lib/whatsapp";
 
 // Builds a wa.me share URL for a gift link. The link (with its #k= fragment) is passed in
 // by the sender's browser and is NOT stored or logged here.
 export async function POST(request: Request) {
+  if (!rateLimit(`washare:${clientIp(request.headers)}`, 20, 60_000)) return tooMany();
   const body = (await request.json().catch(() => null)) as {
     link?: string;
     senderName?: string;

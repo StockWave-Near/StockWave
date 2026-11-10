@@ -23,7 +23,9 @@ Status: `[x]` done, `[ ]` todo.
 - [ ] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys
 - [ ] Wire backend: call `register_gift` once a gift is FUNDED (registrar key), `/api/relay` only if the fallback is needed
 - [ ] Claim flow in the browser: sign `claim({recipient})` with the link key
-- [ ] Region gate `/api/eligible` + "not a US/Canada person" declaration
+- [x] Region gate: `/api/eligible`, US/CA blocked by IP header, `declaredEligible` required by `/api/gift` (451 if blocked)
+- [x] Rate limits on quote, gift and WhatsApp share (429) and `Idempotency-Key` on `/api/gift`
+- [x] Security test suite started: `npm test` (10 tests: region gate, rate limit, link parsing, bot privacy). Grow toward 40+
 - [ ] Error and refund states, mobile check
 
 ## Sambit: WhatsApp, link sharing, extras
