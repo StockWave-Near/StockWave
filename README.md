@@ -88,13 +88,15 @@ The bot never holds or sends a claim key. The key exists only in the link the se
 | Next.js 16 project, configuration, `.env.example` | Done |
 | 1Click client: tokens, quote, status, deposit submit | Done |
 | Stock configuration (GOOGL, AAPL, TSLA) with live asset ids | Done |
+| Catalog of all 28 Ondo assets on NEAR Intents, with logos, tabs and search | Done |
 | API: tokens, status, dry quote, gift create, gift info | Done |
 | Gift link builder and parser (key kept in the fragment) | Done |
 | WhatsApp share link and `POST /api/whatsapp/share` | Done |
 | WhatsApp bot logic and signed webhook | Done, needs a Meta app to go live |
 | Vault contract (Rust) with 14 passing unit tests | Done, testnet deploy pending |
-| Web UI: landing and gift builder with dry-run preview | Done (creating the link needs sign-in) |
-| Web UI: claim page, funding/status screen | Not started |
+| Web UI: landing page, gift builder with dry-run preview, FAQ, footer, logo and favicon | Done (creating the link needs sign-in) |
+| Web UI: create-link button, funding/status screen, claim page | Not started |
+| Enable sending for the other 25 assets | Not started |
 | Browser claim flow and Google login provider | Not started |
 | Backend call to register a funded gift on the vault | Not started |
 | Notebook contract and "Return the favour" | Not started |
@@ -126,7 +128,9 @@ The working checklist lives in [`PLAN.md`](./PLAN.md).
 ```
 src/
   app/api/            route handlers (quote, gift, status, tokens, whatsapp)
-  lib/                1Click client, stock config, gift store, link helpers, WhatsApp, bot
+  components/         GiftBuilder, Catalog, StockIcon, WaveLogo, Footer
+  lib/                1Click client, stock config, Ondo catalog, gift store, link helpers, WhatsApp, bot, region gate, rate limit
+public/brand/         StockWave logo (sage badge)
 contracts/
   stockwave-vault/    Rust smart contract and unit tests
 ARCHITECTURE.md       full design, fallbacks, security list, build and demo plan

@@ -288,3 +288,10 @@ Why NEAR is doing real work (the pitch):
 4. **Vault pays gas** (or NEP-366 meta-transactions as fallback).
 5. **Notebook contract** on NEAR records gifts for "return the favour".
 6. Agent track: the `stockwave` CLI sends gifts through the same APIs.
+
+### Update 10 Nov (evening): full Ondo list and UI
+
+- 28 Ondo assets are available through NEAR Intents: 11 stocks (AAPL, AMZN, CRCL, GOOGL, HOOD, INTC, META, MRVL, MSFT, NVDA, TSLA), 5 ETFs (GLD, IAU, QQQ, SLV, SPY), 5 bonds and cash (AGG, SGOV, TIP, TLT, USDon), 7 portfolios (MAG7X, BRAIN, YLD5, YLD8, BLKHI, BLKDIG, BLKGRW). All are `nep141:bnb-0x....omdep.near`. Snapshot in `src/lib/ondo-catalog.ts`.
+- Only GOOGL, AAPL and TSLA are accepted by the API for now; the rest show as "Coming soon".
+- UI built: landing page, gift builder with dry-run preview, full catalog, FAQ, footer, sage-badge logo. Still open: create-link flow, funding screen, claim page.
+- Region gate, rate limits, idempotency and a first security test suite are in place (`npm test`).

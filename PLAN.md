@@ -1,6 +1,6 @@
 # StockWave on NEAR: plan and task list (single source of truth)
 
-Working name "StockWave" will be renamed; see the naming section at the bottom.
+Project name: **StockWave** ("Send a share like you send a text"). Logo: the sage badge (`public/brand/stockwave-logo.svg`).
 
 Deadline: **14 Nov 2026, 23:59 UTC**. Design: `ARCHITECTURE.md`. New repo, fresh code (separate from the other hackathon projects).
 Stack: Next.js 16 (`src/app`, route handlers), TypeScript, Tailwind. Read `node_modules/next/dist/docs/` before using Next APIs.
@@ -16,6 +16,9 @@ Status: `[x]` done, `[ ]` todo.
 - [x] `/api/quote` (dry quote, server computes amounts) done; real quote lives in `/api/gift`
 - [x] `/api/gift` + `/api/gift/[id]` done (in-memory store, swap for KV; no private key stored)
 - [x] Landing + builder UI `/` (forest-quiet glass style): stock cards, amount chips, note, region confirm, dry-run preview. Create-link button still needs sign-in
+- [x] Full catalog section: all 28 Ondo assets on NEAR Intents (Stocks 11, ETFs 5, Bonds & cash 5, Portfolios 7) with logo image URLs, tabs, search, indicative prices (`src/lib/ondo-catalog.ts`)
+- [x] Landing page sections (hero, stock cards, builder, how it works, WhatsApp and claim previews, features, FAQ, CTA), professional footer component, sage-badge logo and favicon. No hackathon wording on the site
+- [ ] Create-link button in the builder: generate the claim keypair in the browser, call `/api/gift` with `Idempotency-Key`, show the link
 - [ ] Funding + status polling UI, then show the gift link
 - [ ] Claim page `/g/[id]`: read `#k` locally, Google login, claim button, success screen
 - [ ] Social login provider that yields an ed25519 key (Web3Auth/Privy, check NEAR support)
@@ -26,7 +29,10 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Region gate: `/api/eligible`, US/CA blocked by IP header, `declaredEligible` required by `/api/gift` (451 if blocked)
 - [x] Rate limits on quote, gift and WhatsApp share (429) and `Idempotency-Key` on `/api/gift`
 - [x] Security test suite started: `npm test` (10 tests: region gate, rate limit, link parsing, bot privacy). Grow toward 40+
-- [ ] Error and refund states, mobile check
+- [ ] Error and refund states, mobile check (desktop screenshot checked, phone width not yet)
+- [ ] Enable the other 25 assets for sending (add them to `src/lib/stocks.ts`; catalog already lists them as "Coming soon")
+- [ ] Copy brand and token logos into `public/` (they load from Simple Icons and CoinGecko URLs today, with a monogram fallback)
+- [ ] Check the original Moi BNB repo's flow and attack list for anything missing here
 
 ## Sambit: WhatsApp, link sharing, extras
 
