@@ -1,4 +1,6 @@
-# Moi on NEAR
+# StockWave on NEAR
+
+**Send a share like you send a text.**
 
 Give a friend their first stock as a link. They sign in with Google, own a real tokenized share (Google, Apple, Tesla and more), and never see a wallet, seed phrase or gas fee.
 
@@ -11,7 +13,7 @@ Built for the NEAR Hackathon (development ends 14 Nov 2026, 23:59 UTC). Tracks: 
 ```
  SENDER                                             FRIEND
  pick stock + amount ──► dry quote (no signing)
- pay USDC (any chain) ─► NEAR Intents 1Click ──► share lands in the Moi vault (Intents balance)
+ pay USDC (any chain) ─► NEAR Intents 1Click ──► share lands in the StockWave vault (Intents balance)
  browser makes claim keypair; only the PUBLIC key goes to the server
  link = /g/<id>#k=<private key>   (fragment is never sent to any server)
  share link on WhatsApp / copy / native share
@@ -75,7 +77,7 @@ The stocks are `nep141:bnb-0x….omdep.near` assets: Ondo tokens held as NEAR In
 ## Run it
 
 ```bash
-cp .env.example .env.local   # fill ONECLICK_API_KEY, MOI_VAULT_ACCOUNT, NEXT_PUBLIC_APP_URL
+cp .env.example .env.local   # fill ONECLICK_API_KEY, STOCKWAVE_VAULT_ACCOUNT, NEXT_PUBLIC_APP_URL
 npm install
 npm run dev
 ```

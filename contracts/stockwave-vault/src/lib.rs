@@ -1,4 +1,4 @@
-//! Moi vault.
+//! StockWave vault.
 //!
 //! The vault account holds tokenized stocks as NEAR Intents balances (NEP-245 inside the
 //! intents verifier contract). Each gift is tied to one ed25519 public key. That key is added
@@ -59,7 +59,7 @@ trait VaultCallbacks {
 
 #[derive(PanicOnDefault)]
 #[near(contract_state)]
-pub struct MoiVault {
+pub struct StockWaveVault {
     owner: AccountId,
     /// Backend account allowed to register gifts after it has seen the swap succeed.
     registrar: AccountId,
@@ -71,7 +71,7 @@ pub struct MoiVault {
 }
 
 #[near]
-impl MoiVault {
+impl StockWaveVault {
     #[init]
     pub fn new(owner: AccountId, registrar: AccountId, intents: AccountId) -> Self {
         Self {
@@ -215,7 +215,7 @@ impl MoiVault {
     }
 }
 
-impl MoiVault {
+impl StockWaveVault {
     fn payout(&self, key: PublicKey, gift: Gift, to: AccountId) -> Promise {
         ext_intents::ext(self.intents.clone())
             .with_attached_deposit(NearToken::from_yoctonear(1))
@@ -262,14 +262,14 @@ mod tests {
         testing_env!(b.build());
     }
 
-    fn vault() -> MoiVault {
+    fn vault() -> StockWaveVault {
         ctx("owner.near", None, 0);
-        let mut v = MoiVault::new(acct("owner.near"), acct("backend.near"), acct("intents.near"));
+        let mut v = StockWaveVault::new(acct("owner.near"), acct("backend.near"), acct("intents.near"));
         v.allow_token(TOKEN.to_string());
         v
     }
 
-    fn registered(v: &mut MoiVault, k: PublicKey) {
+    fn registered(v: &mut StockWaveVault, k: PublicKey) {
         ctx("backend.near", None, 100);
         v.register_gift(k, acct("alice.near"), TOKEN.to_string(), U128(1_000), 10_000);
     }

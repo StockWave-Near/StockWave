@@ -17,8 +17,8 @@ export type Gift = {
   createdAt: string;
 };
 
-const g = globalThis as unknown as { __moiGifts?: Map<string, Gift> };
-const gifts = (g.__moiGifts ??= new Map<string, Gift>());
+const g = globalThis as unknown as { __stockwaveGifts?: Map<string, Gift> };
+const gifts = (g.__stockwaveGifts ??= new Map<string, Gift>());
 
 export const newGiftId = () => randomBytes(9).toString("base64url");
 export const saveGift = (gift: Gift) => void gifts.set(gift.id, gift);

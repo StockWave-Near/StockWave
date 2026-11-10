@@ -21,9 +21,9 @@ export async function POST(request: Request) {
       destinationAsset: stock.assetId,
       amount: usdToUsdcUnits(b.usd),
       depositType: "ORIGIN_CHAIN",
-      recipient: config.vaultAccount || "moi-vault.near",
+      recipient: config.vaultAccount || "stockwave-vault.near",
       recipientType: "INTENTS",
-      refundTo: config.vaultAccount || "moi-vault.near",
+      refundTo: config.vaultAccount || "stockwave-vault.near",
       refundType: "ORIGIN_CHAIN",
       deadline: new Date(Date.now() + 30 * 60_000).toISOString(),
     });

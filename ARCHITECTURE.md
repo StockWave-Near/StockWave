@@ -1,4 +1,4 @@
-# Moi on NEAR: architecture and build plan
+# StockWave on NEAR: architecture and build plan
 
 Give a friend their first stock as a link. They sign in with Google, own a real tokenized share, and never see a wallet, seed phrase or gas fee.
 
@@ -12,10 +12,10 @@ Legend: **[V]** = verified from docs I read. **[U]** = unverified, check in the 
 ## 1. What we build
 
 1. **Sender** picks a stock (Nvidia, Apple, QQQ and so on) and a dollar amount, and pays from any chain (USDC on NEAR is the demo path).
-2. Moi creates a **gift link**. The link carries a one-time claim key in the URL fragment (`#k=...`), so the server never sees it.
+2. StockWave creates a **gift link**. The link carries a one-time claim key in the URL fragment (`#k=...`), so the server never sees it.
 3. **Friend** opens the link, signs in with Google, and sees "You've been given $20 of Nvidia".
 4. One tap on **Claim**. A relayer pays the gas. The tokenized share lands in the friend's account.
-5. Every gift is written to the **Moi notebook**, a small NEAR contract. This is the Tamil wedding idea: the gift is written down so it can be returned one day. A "Return the favour" button re-gifts.
+5. Every gift is written to the **StockWave notebook**, a small NEAR contract. This is the Tamil wedding idea: the gift is written down so it can be returned one day. A "Return the favour" button re-gifts.
 
 What is different from the BNB version: Binance APIs are replaced by NEAR Intents (1Click) and Ondo stocks, b402 gas-wrapping is replaced by a NEAR meta-transaction relayer, and Google login comes from a social-login provider.
 
@@ -32,7 +32,7 @@ What is different from the BNB version: Binance APIs are replaced by NEAR Intent
            │                                                   │
            ▼                                                   ▼
  ┌─────────────────────────────────────────────────────────────────────────┐
- │ Moi backend (Next.js route handlers / small Node service)              │
+ │ StockWave backend (Next.js route handlers / small Node service)              │
  │  /api/quote      → 1Click POST /v0/quote (dry:true, then dry:false)     │
  │  /api/gift       → create gift record, return link                       │
  │  /api/status     → 1Click GET /v0/status?depositAddress=...             │
@@ -43,7 +43,7 @@ What is different from the BNB version: Binance APIs are replaced by NEAR Intent
          │                   │                       │
          ▼                   ▼                       ▼
  ┌───────────────┐   ┌───────────────┐       ┌─────────────────────────┐
- │ NEAR Intents  │   │ NEAR RPC      │       │ moi-notebook.<you>.near │
+ │ NEAR Intents  │   │ NEAR RPC      │       │ stockwave-notebook.<you>.near │
  │ 1Click API    │   │ (FastNEAR /   │       │ (contract: gift log,    │
  │ quote/status  │   │  mainnet RPC) │       │  return-the-favour)     │
  │ Ondo stocks   │   │ account, ft,  │       └─────────────────────────┘
@@ -59,12 +59,12 @@ Reference: `github.com/ramakrishnanhulk20/Moi` (MIT, created 7 Oct 2026). I read
 
 | BNB version | NEAR version | Effort |
 |---|---|---|
-| `GiftVault.sol` (holds gift, claim by link key, sender reclaim after expiry, owner can pause but not move gifts) | `moi-vault` in **Rust (near-sdk)**: same invariants. Claim uses a **function-call access key** (section 4) | Medium: new language, small contract |
+| `GiftVault.sol` (holds gift, claim by link key, sender reclaim after expiry, owner can pause but not move gifts) | `stockwave-vault` in **Rust (near-sdk)**: same invariants. Claim uses a **function-call access key** (section 4) | Medium: new language, small contract |
 | Binance **RWA Data** (prices, market open) | `GET /v0/tokens` and dry quotes from 1Click: price, decimals | Low |
 | Binance **Trading** (swap) | `POST /v0/quote` (1Click) | Low–medium |
 | Binance **Transaction simulate** | `dry:true` quote + RPC checks of the user's balances and storage registration | Low |
-| **b402** 5-cent gift wrap | 1Click `appFees` (basis points to Moi's Intents account), or an x402-style payment check via OutLayer for the agent flow [U] | Low |
-| **Binance Agentic Wallet** agent (`packages/agent`) | `moi` CLI that holds a NEAR key (or an OutLayer agent wallet [U]) and runs the same create-gift flow | Medium |
+| **b402** 5-cent gift wrap | 1Click `appFees` (basis points to StockWave's Intents account), or an x402-style payment check via OutLayer for the agent flow [U] | Low |
+| **Binance Agentic Wallet** agent (`packages/agent`) | `stockwave` CLI that holds a NEAR key (or an OutLayer agent wallet [U]) and runs the same create-gift flow | Medium |
 | **Privy** (Google/email → wallet) | Keep Privy if it supports NEAR [U]; else Web3Auth, or another provider that yields an ed25519 key | Medium: biggest unknown |
 | Relayer wallet pays claim gas | **Vault account pays gas** through the function-call key's allowance. A relayer with NEP-366 stays as a fallback | Low (simpler than before) |
 | `eligibility.ts` (region block, "I am not a US person" declaration) | Keep as is; re-check Ondo's terms [U] | Low |
@@ -96,7 +96,7 @@ This is the classic NEAR linkdrop pattern, and it is the cleanest fit for "no ga
 
 1. The sender's browser generates an ed25519 keypair. The **public key** is registered on the **vault account** as a **function-call access key** limited to `receiver_id = vault` and `method_names = ["claim"]`, with a small gas allowance. The **private key** goes in the link fragment (`#k=`), so the server never sees it.
 2. The contract maps `public_key → gift`. In `claim`, it reads `env::signer_account_pk()` and releases **only that key's gift**. One key cannot touch another gift.
-3. The friend's page signs a transaction *as the vault account* using the link key, calling `claim({ recipient })`. **The vault account pays the gas** out of its balance (bounded by the key's allowance), so the friend needs no NEAR and Moi needs no relayer service.
+3. The friend's page signs a transaction *as the vault account* using the link key, calling `claim({ recipient })`. **The vault account pays the gas** out of its balance (bounded by the key's allowance), so the friend needs no NEAR and StockWave needs no relayer service.
 4. In the same call, the vault runs `storage_deposit` for the recipient on the token contract if needed, then `ft_transfer`. A callback restores the gift if the transfer fails (same idea as the BNB vault's `after_ft_transfer` re-credit).
 5. After the claim, the key is deleted (`DeleteKey`) so it cannot be reused.
 6. The sender can `reclaim` after expiry (signed by the sender's own account). Expired keys are deleted then too.
@@ -119,7 +119,7 @@ A friend with no wallet has no NEAR account when the sender buys the stock. Use 
 
 1. Backend or sender's browser generates an **ed25519 keypair per gift**. The public key is registered as the gift's *escrow account* (an implicit NEAR account derived from the public key, or an Intents account with that id).
 2. The 1Click quote sends the stock to that escrow account (`recipient` = escrow account id).
-3. The **private key goes only in the link fragment**. Fragments are not sent to servers, so Moi cannot take the gift. Say so in the pitch ("non-custodial gift links").
+3. The **private key goes only in the link fragment**. Fragments are not sent to servers, so StockWave cannot take the gift. Say so in the pitch ("non-custodial gift links").
 4. On claim, the friend's Google-derived account is the destination. The escrow key signs a **DelegateAction** (NEP-366) that transfers the token to the friend. The **relayer** wraps it in a transaction and pays gas. The friend and the escrow account never hold NEAR.
 5. The relayer also does `storage_deposit` for the friend on the token contract if needed.
 
@@ -145,15 +145,15 @@ Fallback if both fail within 4 hours: skip the escrow key. Make the friend log i
 ### 4.3 Backend
 - Next.js route handlers on Vercel, or a small Fastify service if the relayer needs a long-lived process.
 - Stores gift records in SQLite / Vercel KV: `{ id, escrowAccountId, depositAddress, status, assetId, amountIn, createdAt, claimedAt }`. **Never store the private key.**
-- Relayer account `moi-relayer.near` with a small NEAR balance and a daily spend cap.
+- Relayer account `stockwave-relayer.near` with a small NEAR balance and a daily spend cap.
 
-### 4.4 Moi notebook contract (Rust or TypeScript near-sdk-js)
+### 4.4 StockWave notebook contract (Rust or TypeScript near-sdk-js)
 - `record_gift(sender, escrow_account, asset, amount_usd, note_hash)`; `mark_claimed(gift_id, recipient)`; `get_gifts(from, limit)`.
 - Optional `return_gift(prev_gift_id)` links a new gift to the one that inspired it ("returned one day").
 - Small and deployable in a day. If time is short, make it log-only (events via `env::log_str`) and skip storage.
 
 ### 4.5 Agent mode (stretch, AGT track)
-- A `moi` CLI or MCP tool: `moi send --to-link --stock NVDA --usd 20`, which calls the same backend and prints the link. Demo it once in the video: an agent sends a gift from the terminal.
+- A `stockwave` CLI or MCP tool: `stockwave send --to-link --stock NVDA --usd 20`, which calls the same backend and prints the link. Demo it once in the video: an agent sends a gift from the terminal.
 
 ## 5. APIs and protocols
 
@@ -165,7 +165,7 @@ Fallback if both fail within 4 hours: skip the escrow key. Make the friend log i
 | Asset id format | `nep141:<chain>-<address>.omft.near` | [V] examples |
 | Status values | `PENDING_DEPOSIT`, `PROCESSING`, `SUCCESS`, `REFUNDED`, `FAILED`, others | [V] |
 | API key | `X-API-Key`. Without it an extra 0.25% fee applies. With a key: 0.20%, or 0.01% for stablecoin pairs. Get one at partners.near-intents.org | [V] |
-| `appFees` | Moi's "wrap fee" (like the 5 cent b402 wrap). Basis points to an Intents account | [V] |
+| `appFees` | StockWave's "wrap fee" (like the 5 cent b402 wrap). Basis points to an Intents account | [V] |
 | **Ondo stocks on NEAR Intents** | 20 products at launch (Tesla, Nvidia, Apple, Microsoft, Amazon, QQQ, SLV, IAU, ...) | Announced 22 Sep 2026 (news); exact list [U] |
 | **Eligibility** | Reports say US and Canada users are blocked | [U] read Ondo terms; add a region gate and warning |
 | **NEP-366** meta-transactions | Relayer pays gas via `DelegateAction` | NEAR standard |
@@ -185,7 +185,7 @@ Fallback if both fail within 4 hours: skip the escrow key. Make the friend log i
 3. Frontend generates the escrow keypair locally, derives the escrow account id.
 4. `/api/quote` calls 1Click `dry:false` with `recipient = escrow`, `refundTo = sender`. Response gives `depositAddress`.
 5. Sender sends USDC to `depositAddress` (wallet pop-up, or QR code for other chains). Frontend calls `/v0/deposit/submit` with the tx hash.
-6. Frontend polls `/api/status` until `SUCCESS`. Then it writes the gift to the notebook contract and shows the link `https://moi.example/g/<id>#k=<escrowPrivateKey>`.
+6. Frontend polls `/api/status` until `SUCCESS`. Then it writes the gift to the notebook contract and shows the link `https://stockwave.example/g/<id>#k=<escrowPrivateKey>`.
 
 **Claim**
 1. Friend opens the link. The page reads `#k`, checks the escrow account balance via RPC (is the stock there?).
@@ -237,7 +237,7 @@ Cut order if behind: agent CLI → return-the-favour → notebook contract (use 
 
 ## 11. Demo plan (90 seconds)
 
-1. **0:00** One-line pitch over the Moi create page: "Give a friend their first Nvidia share as a link."
+1. **0:00** One-line pitch over the StockWave create page: "Give a friend their first Nvidia share as a link."
 2. **0:10** Pick NVDA, $20. Show the dry-run line: "You pay 20.04 USDC, they receive about 0.14 NVDA, nothing is signed yet."
 3. **0:25** Pay, watch the status tick to success, copy the link.
 4. **0:40** Open the link in a **clean browser profile** on a phone-sized window. Sign in with Google. Press Claim. No wallet install, no gas prompt.
@@ -250,7 +250,7 @@ Post on X: the video, one sentence on the problem, one on how NEAR Intents + Ond
 
 ## 12. Submission copy (draft, 20–2,000 characters)
 
-> Moi lets anyone give a friend their first stock as a link. The sender picks a company and an amount; the friend opens the link, signs in with Google, and owns a tokenized share, with no wallet app, seed phrase or gas. Built on NEAR: NEAR Intents' 1Click API routes payment from any chain into Ondo's tokenized stocks, gift links use a one-time escrow key kept in the URL fragment so Moi never holds funds, and a NEP-366 relayer pays gas at claim time. A small NEAR contract, the "Moi notebook", records each gift so it can be returned one day, from the Tamil custom of writing wedding gifts in a family notebook. Includes a 60-test attack suite, a dry-run preview before anyone signs, and an agent CLI for sending gifts from the terminal.
+> StockWave lets anyone give a friend their first stock as a link. The sender picks a company and an amount; the friend opens the link, signs in with Google, and owns a tokenized share, with no wallet app, seed phrase or gas. Built on NEAR: NEAR Intents' 1Click API routes payment from any chain into Ondo's tokenized stocks, gift links use a one-time escrow key kept in the URL fragment so StockWave never holds funds, and a NEP-366 relayer pays gas at claim time. A small NEAR contract, the "StockWave notebook", records each gift so it can be returned one day, from the Tamil custom of writing wedding gifts in a family notebook. Includes a 60-test attack suite, a dry-run preview before anyone signs, and an agent CLI for sending gifts from the terminal.
 
 Edit it to match what is actually built. Do not claim features you cut.
 
@@ -272,7 +272,7 @@ Edit it to match what is actually built. Do not claim features you cut.
 - A Google OAuth client or the social-login provider's app id.
 - A domain or Vercel project name.
 - Your NEAR wallet address for the submission form and your team size.
-- A decision on Shape A or B after the checklist, and the Moi BNB repo link so I can copy the attack list.
+- A decision on Shape A or B after the checklist, and the StockWave BNB repo link so I can copy the attack list.
 
 ## 15. Update 10 Nov: what the live API showed, and why this is a NEAR project
 
@@ -287,4 +287,4 @@ Why NEAR is doing real work (the pitch):
 3. **Function-call access keys** are native to NEAR. The gift link carries one; it can only call `claim` on the vault. This is what makes "no gas, no wallet, non-custodial link" possible, and it has no equivalent on EVM.
 4. **Vault pays gas** (or NEP-366 meta-transactions as fallback).
 5. **Notebook contract** on NEAR records gifts for "return the favour".
-6. Agent track: the `moi` CLI sends gifts through the same APIs.
+6. Agent track: the `stockwave` CLI sends gifts through the same APIs.

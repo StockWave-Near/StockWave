@@ -11,12 +11,12 @@ export function whatsappShareUrl(opts: {
   const who = opts.senderName ? `${opts.senderName} sent you` : "You've been sent";
   const what =
     opts.stock && opts.usd ? `$${opts.usd} of ${opts.stock}` : "your first stock";
-  const text = `${who} ${what} on Moi 🎁\nOpen to claim (no wallet needed):\n${opts.link}`;
+  const text = `${who} ${what} on StockWave 🎁\nOpen to claim (no wallet needed):\n${opts.link}`;
   const base = opts.phone ? `https://wa.me/${opts.phone.replace(/\D/g, "")}` : "https://wa.me/";
   return `${base}?text=${encodeURIComponent(text)}`;
 }
 
-// Level 2 (needs Meta WhatsApp Business Cloud API): Moi sends the message itself.
+// Level 2 (needs Meta WhatsApp Business Cloud API): StockWave sends the message itself.
 // Business-initiated messages must use an approved template. Template name is a placeholder.
 export async function sendGiftTemplate(to: string, link: string, amountLabel: string) {
   if (!config.waToken || !config.waPhoneId) {
@@ -33,7 +33,7 @@ export async function sendGiftTemplate(to: string, link: string, amountLabel: st
       to: to.replace(/\D/g, ""),
       type: "template",
       template: {
-        name: "moi_gift_link",
+        name: "stockwave_gift_link",
         language: { code: "en" },
         components: [
           {
