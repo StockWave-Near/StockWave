@@ -79,7 +79,7 @@ A simple bot for people who would rather not open a website. Its job is onboardi
 | `stocks` | The stocks available (Google, Apple, Tesla). |
 | `help` | The command list. |
 
-The bot never holds or sends a claim key. The key exists only in the link the sender shared, so the bot points people back to that link. Incoming webhooks are verified with Meta's HMAC signature. Senders can also share a gift with a prefilled `wa.me` message, which needs no API keys.
+The bot never holds or sends a claim key. The key exists only in the link the sender shared, so the bot points people back to that link. Incoming webhooks are verified with Twilio's HMAC-SHA1 signature. Senders can also share a gift with a prefilled `wa.me` message, which needs no API keys.
 
 ## Project status
 
@@ -92,17 +92,20 @@ The bot never holds or sends a claim key. The key exists only in the link the se
 | API: tokens, status, dry quote, gift create, gift info | Done |
 | Gift link builder and parser (key kept in the fragment) | Done |
 | WhatsApp share link and `POST /api/whatsapp/share` | Done |
-| WhatsApp bot logic and signed webhook | Done, needs a Meta app to go live |
+| WhatsApp bot logic and signed webhook | Done — Twilio WhatsApp Sandbox live |
 | Vault contract (Rust) with 14 passing unit tests | Done, testnet deploy pending |
-| Web UI: landing page, gift builder with dry-run preview, FAQ, footer, logo and favicon | Done (creating the link needs sign-in) |
-| Web UI: create-link button, funding/status screen, claim page | Not started |
-| Enable sending for the other 25 assets | Not started |
+| Web UI: landing page, gift builder with dry-run preview, funding/status screen, FAQ, footer, logo and favicon | Done (creating the link needs sign-in) |
+| Web UI: claim page shell with OG metadata | Done (claim button needs social login) |
+| Gift link share: WhatsApp, copy, native share sheet | Done |
+| Referrer-Policy and security headers | Done |
+| Persistent database (Upstash Redis, in-memory fallback) | Done |
 | Browser claim flow and Google login provider | Not started |
+| Enable sending for the other 25 assets | Not started |
 | Backend call to register a funded gift on the vault | Not started |
 | Notebook contract and "Return the favour" | Not started |
-| Region gate (US/CA blocked, declaration required), rate limits, idempotency | Done on the API; UI wording pending |
-| Security test suite (10 tests, `npm test`) | Started |
-| Persistent database (gifts are in memory today) | Not started |
+| Region gate (US/CA blocked, declaration required), rate limits, idempotency | Done |
+| Security test suite (61 tests, `npm test`) | Done — 61 attacks, all refused |
+| Persistent database (Upstash Redis) | Done |
 | Agent CLI (stretch) | Not started |
 
 The working checklist lives in [`PLAN.md`](./PLAN.md).
@@ -185,8 +188,9 @@ npm run dev
 | `STOCKWAVE_VAULT_ACCOUNT` | NEAR account of the deployed vault. |
 | `NEXT_PUBLIC_APP_URL` | Public base URL used to build gift links. |
 | `NEAR_RPC_URL` | NEAR RPC endpoint. |
-| `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` | WhatsApp Cloud API credentials (optional). |
-| `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | Webhook handshake and signature verification (optional). |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | Twilio WhatsApp Sandbox credentials. |
+| `TWILIO_WHATSAPP_FROM` | Sandbox sender number (always `+14155238886`). |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis for persistent gift storage (falls back to in-memory when absent). |
 
 ## Security model
 
