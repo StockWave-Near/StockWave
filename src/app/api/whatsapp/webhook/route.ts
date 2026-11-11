@@ -55,10 +55,18 @@ export async function POST(request: Request) {
   if (phone && body) {
     try {
       const reply = await handleBotMessage(phone, body.slice(0, 200));
-      await sendText(phone, reply);
+      // Reply via TwiML in the response body — this is the simplest path for
+      // sandbox use and needs no ContentSid or outbound API call.
+      const escaped = reply
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      return new Response(`<Response><Message>${escaped}</Message></Response>`, {
+        status: 200,
+        headers: { "content-type": "text/xml" },
+      });
     } catch (err) {
-      // Log the error so it appears in Vercel function logs for debugging.
-      console.error("[whatsapp/webhook] sendText failed:", err);
+      console.error("[whatsapp/webhook] bot failed:", err);
     }
   }
 
