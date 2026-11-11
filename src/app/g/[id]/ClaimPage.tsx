@@ -127,14 +127,14 @@ export default function ClaimPage({ id }: { id: string }) {
           <p style={{ fontSize: 14, opacity: 0.75, textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
             Sign in with Google to claim this share. No wallet, no fees, no crypto.
           </p>
-          <ClaimAction claimKey={claimKey} />
+          <ClaimAction claimKey={claimKey} giftId={id} />
         </>
       )}
     </ClaimShell>
   );
 }
 
-function ClaimAction({ claimKey }: { claimKey: string }) {
+function ClaimAction({ claimKey, giftId }: { claimKey: string; giftId: string }) {
   if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
     return (
       <p className="fine" style={{ textAlign: "center" }}>
@@ -142,33 +142,83 @@ function ClaimAction({ claimKey }: { claimKey: string }) {
       </p>
     );
   }
-  return <PrivyClaimButton claimKey={claimKey} />;
+  return <PrivyClaimButton claimKey={claimKey} giftId={giftId} />;
 }
 
-function PrivyClaimButton({ claimKey }: { claimKey: string }) {
-  const { ready, authenticated, user, login, getAccessToken } = usePrivy();
-  const [status, setStatus] = useState<string | null>(null);
+function PrivyClaimButton({ claimKey, giftId }: { claimKey: string; giftId: string }) {
+  const { ready, authenticated, user, login } = usePrivy();
+  const [status, setStatus] = useState<"idle" | "claiming" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Derive a NEAR-compatible account id from the Privy user.
+  // Format: google_<sanitised-email-local> or twitter_<username>, falling back to privy sub.
+  function recipientAccountId(): string {
+    if (!user) return "";
+    if (user.google?.email) {
+      const local = user.google.email.split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
+      return `${local}.near`;
+    }
+    if (user.twitter?.username) {
+      return `${user.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
+    }
+    return `${user.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
+  }
 
   async function claim() {
-    setStatus(null);
-    const token = await getAccessToken();
-    // TODO: POST /api/claim with { claimKey, token } once the claim endpoint exists.
-    void claimKey;
-    void token;
-    setStatus("Signed in. Claim endpoint is not wired yet.");
+    setStatus("claiming");
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/claim", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ giftId, claimKey, recipientAccountId: recipientAccountId() }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(err.error ?? "claim_failed");
+      }
+      setStatus("done");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "unknown";
+      setErrorMsg(
+        msg === "already_claimed" ? "This gift has already been claimed." :
+        msg === "not_ready" ? "The gift is not ready to claim yet. Come back in a moment." :
+        "Something went wrong. Please try again."
+      );
+      setStatus("error");
+    }
+  }
+
+  if (status === "done") {
+    return (
+      <>
+        <div className="preview" style={{ textAlign: "center", maxWidth: 340 }}>
+          🎉 Claimed! The share is on its way to your account.
+        </div>
+        <p className="fine" style={{ textAlign: "center" }}>
+          Account: {recipientAccountId()}
+        </p>
+      </>
+    );
   }
 
   return (
     <>
-      <button className="pill" disabled={!ready} onClick={authenticated ? claim : () => login()}>
-        {authenticated ? "Claim my share" : "Sign in to claim"}
+      <button
+        className="pill"
+        disabled={!ready || status === "claiming"}
+        onClick={authenticated ? claim : () => login()}
+      >
+        {status === "claiming" ? "Claiming…" : authenticated ? "Claim my share" : "Sign in to claim"}
       </button>
-      {authenticated && (
+      {authenticated && status === "idle" && (
         <p className="fine" style={{ textAlign: "center" }}>
           Signed in as {user?.google?.email ?? (user?.twitter?.username ? `@${user.twitter.username}` : "your account")}
         </p>
       )}
-      {status && <p className="fine" style={{ textAlign: "center" }}>{status}</p>}
+      {status === "error" && (
+        <p className="fine" style={{ textAlign: "center", color: "#c0392b" }}>{errorMsg}</p>
+      )}
     </>
   );
 }
