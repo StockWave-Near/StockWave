@@ -3,6 +3,7 @@
 import StockIcon from "./StockIcon";
 import ShareButtons from "./ShareButtons";
 import { useState, useEffect, useRef } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 const STOCKS = [
   { key: "GOOGL", name: "Google", sub: "Alphabet Class A", logo: "https://cdn.simpleicons.org/google/4285F4", color: "#4285F4" },
@@ -43,6 +44,24 @@ export default function GiftBuilder() {
   const [created, setCreated] = useState<GiftCreated | null>(null);
   const [fundingStatus, setFundingStatus] = useState<string>("Waiting for payment…");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Privy gives us the logged-in user. PrivyProvider wraps the whole app in Providers.tsx
+  // so usePrivy() is always safe to call. If the app id is missing it returns unauthenticated.
+  const { ready: privyReady, user: privyUser, login: privyLogin } = usePrivy();
+
+  // Derive a NEAR-compatible account id from the Privy user (same logic as ClaimPage).
+  function senderAccountId(): string {
+    if (!privyUser) return "sender.near"; // fallback for unauthenticated / no Privy
+    if (privyUser.google?.email) {
+      const local = privyUser.google.email
+        .split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
+      return `${local}.near`;
+    }
+    if (privyUser.twitter?.username) {
+      return `${privyUser.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
+    }
+    return `${privyUser.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
+  }
 
   const chosen = STOCKS.find((s) => s.key === stock)!;
 
@@ -129,7 +148,7 @@ export default function GiftBuilder() {
         headers: { "content-type": "application/json", "idempotency-key": idemKey },
         body: JSON.stringify({
           stock, usd, note, declaredEligible: declared,
-          senderAccount: "sender.near", // replaced by Ayush's social-login account
+          senderAccount: senderAccountId(),
           claimPublicKey: pubB58,
         }),
       });
@@ -212,7 +231,12 @@ export default function GiftBuilder() {
           <span style={{ opacity: 0.45 }}>#k=…</span>
         </div>
 
-        <ShareButtons link={created.link} stock={s.name} usd={created.usd} />
+        <ShareButtons
+          link={created.link}
+          stock={s.name}
+          usd={created.usd}
+          senderName={privyUser?.google?.email?.split("@")[0] ?? privyUser?.twitter?.username ?? undefined}
+        />
 
         <p className="fine" style={{ marginTop: 20 }}>
           Keep this link safe — only the person who opens it can claim the gift. The claim key lives after the # and is never sent to StockWave.
@@ -267,10 +291,23 @@ export default function GiftBuilder() {
           <button className="pill" onClick={preview} disabled={busy} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
             {busy ? "Checking…" : "Preview price"} <span className="arrow">↗</span>
           </button>
-          <button className="pill" onClick={createLink} disabled={busy || !declared}>
-            {busy ? "Creating…" : "Create gift link"} <span className="arrow">↗</span>
-          </button>
+          {!privyReady ? null : !privyUser && privyLogin ? (
+            <button className="pill" onClick={() => privyLogin()} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
+              Sign in to send <span className="arrow">↗</span>
+            </button>
+          ) : (
+            <button className="pill" onClick={createLink} disabled={busy || !declared}>
+              {busy ? "Creating…" : "Create gift link"} <span className="arrow">↗</span>
+            </button>
+          )}
         </div>
+
+        {privyUser && (
+          <p className="fine">
+            Sending as{" "}
+            <strong>{privyUser.google?.email ?? (privyUser.twitter?.username ? `@${privyUser.twitter.username}` : senderAccountId())}</strong>
+          </p>
+        )}
 
         {result && <div className={`preview ${result.ok ? "" : "err"}`}>{result.text}</div>}
         <p className="fine">Tokenized shares are not a brokerage account.</p>

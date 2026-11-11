@@ -18,14 +18,14 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Landing + builder UI `/` (forest-quiet glass style): stock cards, amount chips, note, region confirm, dry-run preview. Create-link button still needs sign-in
 - [x] Full catalog section: all 28 Ondo assets on NEAR Intents (Stocks 11, ETFs 5, Bonds & cash 5, Portfolios 7) with logo image URLs, tabs, search, indicative prices (`src/lib/ondo-catalog.ts`)
 - [x] Landing page sections (hero, stock cards, builder, how it works, WhatsApp and claim previews, features, FAQ, CTA), professional footer component, sage-badge logo and favicon. No hackathon wording on the site
-- [ ] Create-link button in the builder: generate the claim keypair in the browser, call `/api/gift` with `Idempotency-Key`, show the link
-- [ ] Funding + status polling UI, then show the gift link
-- [ ] Claim page `/g/[id]`: read `#k` locally, Google login, claim button, success screen
-- [ ] Social login provider that yields an ed25519 key (Web3Auth/Privy, check NEAR support)
+- [x] Create-link button in the builder: generate claim keypair in browser, call `/api/gift` with `Idempotency-Key`, show link; `senderAccount` wired from Privy logged-in user
+- [x] Funding + status polling UI: polls `/api/status` every 4s, advances to gift-ready screen on SUCCESS
+- [x] Claim page `/g/[id]`: reads `#k` locally, Google/X login via Privy, claim button calls `/api/claim`, success screen
+- [x] Social login: Privy (Google + X) wired via `PrivyProvider` in `Providers.tsx`
 - [x] Vault contract `contracts/stockwave-vault` (Rust, near-sdk 5.15.1): register_gift, claim by function-call key, sender reclaim after expiry, pause, token allowlist, failed-payout restore. 14 unit tests pass.
 - [ ] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys
 - [ ] Wire backend: call `register_gift` once a gift is FUNDED (registrar key), `/api/relay` only if the fallback is needed
-- [ ] Claim flow in the browser: sign `claim({recipient})` with the link key
+- [ ] Claim flow in the browser: sign `claim({recipient})` with the link key — `/api/claim` exists, on-chain vault call pending deploy
 - [x] Region gate: `/api/eligible`, US/CA blocked by IP header, `declaredEligible` required by `/api/gift` (451 if blocked)
 - [x] Rate limits on quote, gift and WhatsApp share (429) and `Idempotency-Key` on `/api/gift`
 - [x] Security test suite started: `npm test` (10 tests: region gate, rate limit, link parsing, bot privacy). Grow toward 40+

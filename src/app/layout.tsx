@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Gift a friend their first stock as a link. They sign in with Google and never see a wallet, seed phrase or gas fee.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${brygada.variable} ${poppins.variable} ${urbanist.variable}`}>
       <body>
