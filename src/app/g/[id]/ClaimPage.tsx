@@ -161,11 +161,11 @@ function PrivyClaimButton({ claimKey }: { claimKey: string }) {
   return (
     <>
       <button className="pill" disabled={!ready} onClick={authenticated ? claim : () => login()}>
-        {authenticated ? "Claim my share" : "Sign in with Google to claim"}
+        {authenticated ? "Claim my share" : "Sign in to claim"}
       </button>
       {authenticated && (
         <p className="fine" style={{ textAlign: "center" }}>
-          Signed in as {user?.google?.email ?? "your Google account"}
+          Signed in as {user?.google?.email ?? (user?.twitter?.username ? `@${user.twitter.username}` : "your account")}
         </p>
       )}
       {status && <p className="fine" style={{ textAlign: "center" }}>{status}</p>}
