@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import WaveLogo from "@/components/WaveLogo";
 import StockIcon from "@/components/StockIcon";
 
@@ -126,16 +127,49 @@ export default function ClaimPage({ id }: { id: string }) {
           <p style={{ fontSize: 14, opacity: 0.75, textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
             Sign in with Google to claim this share. No wallet, no fees, no crypto.
           </p>
-          {/* Social login + claim button — wired by Ayush. The claimKey is in state ready to use. */}
-          <button className="pill" disabled style={{ cursor: "not-allowed", opacity: 0.5 }}>
-            Sign in with Google to claim
-          </button>
-          <p className="fine" style={{ textAlign: "center" }}>
-            Claim key detected. Social login coming soon.
-          </p>
+          <ClaimAction claimKey={claimKey} />
         </>
       )}
     </ClaimShell>
+  );
+}
+
+function ClaimAction({ claimKey }: { claimKey: string }) {
+  if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
+    return (
+      <p className="fine" style={{ textAlign: "center" }}>
+        Sign-in is not configured yet (missing NEXT_PUBLIC_PRIVY_APP_ID).
+      </p>
+    );
+  }
+  return <PrivyClaimButton claimKey={claimKey} />;
+}
+
+function PrivyClaimButton({ claimKey }: { claimKey: string }) {
+  const { ready, authenticated, user, login, getAccessToken } = usePrivy();
+  const [status, setStatus] = useState<string | null>(null);
+
+  async function claim() {
+    setStatus(null);
+    const token = await getAccessToken();
+    // TODO: POST /api/claim with { claimKey, token } once the claim endpoint exists.
+    void claimKey;
+    void token;
+    setStatus("Signed in. Claim endpoint is not wired yet.");
+  }
+
+  return (
+    <>
+      <button className="pill" disabled={!ready} onClick={authenticated ? claim : () => login()}>
+        {authenticated ? "Claim my share" : "Sign in with Google to claim"}
+      </button>
+      {authenticated && (
+        <p className="fine" style={{ textAlign: "center" }}>
+          Signed in as {user?.google?.email ?? "your Google account"}
+        </p>
+      )}
+      {status && <p className="fine" style={{ textAlign: "center" }}>{status}</p>}
+    </>
   );
 }
 
