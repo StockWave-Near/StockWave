@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import ClaimPage from "./ClaimPage";
 
+// This route is fully dynamic — the gift id comes from the URL and the claim key
+// from the fragment, so there is nothing to prerender at build time.
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ id: string }> };
 
 // ── Open Graph metadata ─────────────────────────────────────────────────────
