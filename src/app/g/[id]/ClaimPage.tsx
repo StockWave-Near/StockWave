@@ -127,14 +127,14 @@ export default function ClaimPage({ id }: { id: string }) {
           <p style={{ fontSize: 14, opacity: 0.75, textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
             Sign in with Google to claim this share. No wallet, no fees, no crypto.
           </p>
-          <ClaimAction claimKey={claimKey} giftId={id} />
+          <ClaimAction claimKey={claimKey} giftId={id} gift={gift} />
         </>
       )}
     </ClaimShell>
   );
 }
 
-function ClaimAction({ claimKey, giftId }: { claimKey: string; giftId: string }) {
+function ClaimAction({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
   if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
     return (
       <p className="fine" style={{ textAlign: "center" }}>
@@ -142,10 +142,10 @@ function ClaimAction({ claimKey, giftId }: { claimKey: string; giftId: string })
       </p>
     );
   }
-  return <PrivyClaimButton claimKey={claimKey} giftId={giftId} />;
+  return <PrivyClaimButton claimKey={claimKey} giftId={giftId} gift={gift} />;
 }
 
-function PrivyClaimButton({ claimKey, giftId }: { claimKey: string; giftId: string }) {
+function PrivyClaimButton({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
   const { ready, authenticated, user, login } = usePrivy();
   const [status, setStatus] = useState<"idle" | "claiming" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -190,6 +190,8 @@ function PrivyClaimButton({ claimKey, giftId }: { claimKey: string; giftId: stri
   }
 
   if (status === "done") {
+    // Build a prefilled URL for "Return the favour" — sender becomes the new recipient.
+    const returnUrl = `/?returnFavour=1&stock=${gift?.stock ?? ""}&usd=${gift?.usd ?? 20}`;
     return (
       <>
         <div className="preview" style={{ textAlign: "center", maxWidth: 340 }}>
@@ -198,6 +200,19 @@ function PrivyClaimButton({ claimKey, giftId }: { claimKey: string; giftId: stri
         <p className="fine" style={{ textAlign: "center" }}>
           Account: {recipientAccountId()}
         </p>
+        <a
+          href={returnUrl}
+          className="pill"
+          style={{ marginTop: 8, background: "rgba(44,58,34,0.12)", color: "inherit", textDecoration: "none" }}
+        >
+          Return the favour 🔁
+        </a>
+        <a
+          href="/notebook"
+          style={{ fontSize: 13, opacity: 0.65, marginTop: 4 }}
+        >
+          View the gift notebook →
+        </a>
       </>
     );
   }

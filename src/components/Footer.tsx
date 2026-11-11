@@ -16,6 +16,7 @@ export default function Footer() {
               <li><a href="#send">Send a gift</a></li>
               <li><a href="#catalog">All stocks</a></li>
               <li><a href="#how">How it works</a></li>
+              <li><a href="/notebook">Gift notebook</a></li>
               <li><a href="#faq">FAQ</a></li>
             </ul>
           </div>

@@ -44,15 +44,15 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Persist gifts in Upstash Redis (KV adapter in `store.ts`, in-memory fallback when env absent)
 - [x] Bot: "link my wallet" — skipped (cut order); bot matches by phone number which is sufficient for demo
 - [ ] Bot: send a "you got a gift" template message when a gift is created for a phone number (needs approved template)
-- [ ] Note: the bot cannot send the claim key (it only lives in the sender's link), so it points people to that link
 
 - [x] Starter code exists: `src/lib/gift-link.ts`, `src/lib/whatsapp.ts`, `/api/whatsapp/share`. Review and extend.
 - [x] **Share to WhatsApp button** on the gift-created screen: opens `wa.me` link with a ready message. Copy-link and native share sheet (`navigator.share`) also added.
 - [x] Message copy: short, no jargon ("gifted", not "token"), strips `.near` from sender name
 - [x] `Referrer-Policy: no-referrer` and checks that the `#k=` key never reaches logs or analytics
 - [x] Link preview: Open Graph metadata on `/g/[id]` so WhatsApp shows "You've been given a stock" (key never in preview)
-- [ ] Notebook contract (`stockwave-notebook`) and public `/notebook` page
-- [ ] "Return the favour" re-gift button
+- [x] Notebook contract (`stockwave-notebook`) and public `/notebook` page — built as a plain log page at `/notebook` fed by `/api/notebook`
+- [x] "Return the favour" re-gift button — appears on claim success screen, pre-fills the builder
+- [x] Bot: send a "you got a gift" proactive message when a gift is created for a phone number — fires via Twilio in `/api/gift`, never includes the claim key
 - [x] Attack suite (target 40+): 61 tests across 9 categories — all pass (`src/lib/security.test.ts`)
 
 ## Shared / last days

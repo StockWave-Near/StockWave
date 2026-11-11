@@ -66,6 +66,34 @@ export async function POST(request: Request) {
     });
     const result = { id, depositAddress, quote };
     if (idemKey) await setIdem(`${b.senderAccount}:${idemKey}`, result);
+
+    // Proactive WhatsApp notification — fire-and-forget, never blocks the response.
+    // The claim link is built here but NOT stored; it only lives in the sender's browser.
+    // We send it only if the sender explicitly provided a recipientPhone.
+    if (phone && config.twilioAccountSid && config.twilioAuthToken) {
+      const senderName = b.senderAccount.replace(/\.near$/, "");
+      const stockName = STOCKS[b.stock].name;
+      const notifyText =
+        `${senderName} gifted you $${b.usd} of ${stockName} on StockWave 🎁\n` +
+        `Ask them to share the gift link with you to claim — no wallet needed.`;
+      // We intentionally do NOT include the claim link here because the private key
+      // lives only in the sender's browser. The sender shares it themselves.
+      const params = new URLSearchParams({
+        From: `whatsapp:${config.twilioWhatsAppFrom}`,
+        To: `whatsapp:+${phone}`,
+        Body: notifyText,
+      });
+      const creds = Buffer.from(`${config.twilioAccountSid}:${config.twilioAuthToken}`).toString("base64");
+      fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${config.twilioAccountSid}/Messages.json`,
+        {
+          method: "POST",
+          headers: { authorization: `Basic ${creds}`, "content-type": "application/x-www-form-urlencoded" },
+          body: params.toString(),
+        }
+      ).catch(() => { /* ignore — notification is best-effort */ });
+    }
+
     return Response.json(result);
   } catch {
     return Response.json({ error: "gift_create_failed" }, { status: 502 });

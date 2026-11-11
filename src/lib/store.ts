@@ -107,6 +107,13 @@ export async function giftsForPhone(phone: string): Promise<Gift[]> {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+// All gifts — used by the public notebook page. Fetches via the gift:* key pattern.
+export async function getAllGifts(): Promise<Gift[]> {
+  const keys = await kv.keys("gift:");
+  const all = await Promise.all(keys.map((k) => kv.get(k) as Promise<Gift | null>));
+  return all.filter(Boolean) as Gift[];
+}
+
 // Idempotency: same Idempotency-Key returns the original response instead of a second gift.
 export async function getIdem(k: string): Promise<unknown> {
   return kv.get(`idem:${k}`);
