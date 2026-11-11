@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Brygada_1918, Poppins, Urbanist } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
 const brygada = Brygada_1918({ variable: "--font-serif", subsets: ["latin"] });
 const poppins = Poppins({ variable: "--font-body", subsets: ["latin"], weight: ["400", "500", "600"] });
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${brygada.variable} ${poppins.variable} ${urbanist.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
