@@ -1,9 +1,7 @@
 import { config } from "./config";
 
-// Level 1 (no setup): wa.me click-to-share link. Works on phone and desktop, no API keys.
-// Message is intentionally short and jargon-free: "a share", not "token".
-// The gift link (with its #k= fragment) is passed in by the sender's browser and is not
-// stored here.
+// ── Level 1: wa.me share link (no API keys needed) ───────────────────────────
+// The gift link (#k= fragment) is passed in by the browser and never stored here.
 export function whatsappShareUrl(opts: {
   link: string;
   senderName?: string;
@@ -11,68 +9,55 @@ export function whatsappShareUrl(opts: {
   usd?: number;
   phone?: string; // E.164 digits only; omit to let the sender pick a contact
 }): string {
-  // Build human-readable pieces. Keep the whole message under ~160 chars before the link.
   const from = opts.senderName
-    ? // Strip the .near suffix so it reads like a real name when possible.
-      opts.senderName.replace(/\.near$/, "")
+    ? opts.senderName.replace(/\.near$/, "") // strip .near so it reads like a real name
     : "Someone";
-  const what =
-    opts.stock && opts.usd
-      ? `$${opts.usd} of ${opts.stock}`
-      : "a share";
-  // Plain, friendly copy. No jargon, no "token".
+  const what = opts.stock && opts.usd ? `$${opts.usd} of ${opts.stock}` : "a share";
   const text = `${from} gifted you ${what} 🎁\nOpen to claim — no wallet or crypto needed:\n${opts.link}`;
   const base = opts.phone ? `https://wa.me/${opts.phone.replace(/\D/g, "")}` : "https://wa.me/";
   return `${base}?text=${encodeURIComponent(text)}`;
 }
 
-// Level 2 (needs Meta WhatsApp Business Cloud API): StockWave sends the message itself.
-// Business-initiated messages must use an approved template. Template name is a placeholder.
-export async function sendGiftTemplate(to: string, link: string, amountLabel: string) {
-  if (!config.waToken || !config.waPhoneId) {
-    throw new Error("WhatsApp Cloud API not configured");
-  }
-  const res = await fetch(`https://graph.facebook.com/v21.0/${config.waPhoneId}/messages`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${config.waToken}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: to.replace(/\D/g, ""),
-      type: "template",
-      template: {
-        name: "stockwave_gift_link",
-        language: { code: "en" },
-        components: [
-          {
-            type: "body",
-            parameters: [
-              { type: "text", text: amountLabel },
-              { type: "text", text: link },
-            ],
-          },
-        ],
-      },
-    }),
-  });
-  if (!res.ok) throw new Error(`WhatsApp ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  return res.json();
+// ── Level 2: Twilio WhatsApp Sandbox ─────────────────────────────────────────
+// Twilio sends webhooks as application/x-www-form-urlencoded and expects replies
+// the same way. We use the REST API to send outbound messages.
+// Sandbox number is always "whatsapp:+14155238886"; recipients must opt in first
+// by texting the join code shown in the Twilio console.
+
+function twilioAuthHeader(): string {
+  const creds = `${config.twilioAccountSid}:${config.twilioAuthToken}`;
+  return `Basic ${Buffer.from(creds).toString("base64")}`;
 }
 
-// Free-form reply inside the 24h window after the user messaged the bot first.
-export async function sendText(to: string, body: string) {
-  if (!config.waToken || !config.waPhoneId) throw new Error("WhatsApp Cloud API not configured");
-  const res = await fetch(`https://graph.facebook.com/v21.0/${config.waPhoneId}/messages`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${config.waToken}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: to.replace(/\D/g, ""),
-      type: "text",
-      text: { body: body.slice(0, 4000), preview_url: false },
-    }),
+// Send a free-form text reply. `to` is E.164, e.g. "919876543210".
+export async function sendText(to: string, body: string): Promise<void> {
+  if (!config.twilioAccountSid || !config.twilioAuthToken || !config.twilioWhatsAppFrom) {
+    throw new Error("Twilio not configured");
+  }
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${config.twilioAccountSid}/Messages.json`;
+  const params = new URLSearchParams({
+    From: `whatsapp:${config.twilioWhatsAppFrom}`,
+    To: `whatsapp:+${to.replace(/\D/g, "")}`,
+    Body: body.slice(0, 1600),
   });
-  if (!res.ok) throw new Error(`WhatsApp ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      authorization: twilioAuthHeader(),
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+  if (!res.ok) throw new Error(`Twilio ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}
+
+// Send the gift notification as a plain text message (no template approval needed
+// in the sandbox — any message works within the 24 h session window).
+export async function sendGiftTemplate(
+  to: string,
+  link: string,
+  amountLabel: string,
+): Promise<void> {
+  const body = `You've been gifted ${amountLabel} on StockWave 🎁\nClaim it here (no wallet needed):\n${link}`;
+  return sendText(to, body);
 }
