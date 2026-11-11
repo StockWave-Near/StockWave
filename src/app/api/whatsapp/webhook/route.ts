@@ -56,7 +56,10 @@ export async function POST(request: Request) {
     try {
       const reply = await handleBotMessage(phone, body.slice(0, 200));
       await sendText(phone, reply);
-    } catch { /* never fail the webhook; Twilio would retry */ }
+    } catch (err) {
+      // Log the error so it appears in Vercel function logs for debugging.
+      console.error("[whatsapp/webhook] sendText failed:", err);
+    }
   }
 
   // Twilio expects a 200 with an empty TwiML response (or just 200 with no body).
