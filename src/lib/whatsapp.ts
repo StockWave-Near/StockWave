@@ -1,6 +1,9 @@
 import { config } from "./config";
 
 // Level 1 (no setup): wa.me click-to-share link. Works on phone and desktop, no API keys.
+// Message is intentionally short and jargon-free: "a share", not "token".
+// The gift link (with its #k= fragment) is passed in by the sender's browser and is not
+// stored here.
 export function whatsappShareUrl(opts: {
   link: string;
   senderName?: string;
@@ -8,10 +11,17 @@ export function whatsappShareUrl(opts: {
   usd?: number;
   phone?: string; // E.164 digits only; omit to let the sender pick a contact
 }): string {
-  const who = opts.senderName ? `${opts.senderName} sent you` : "You've been sent";
+  // Build human-readable pieces. Keep the whole message under ~160 chars before the link.
+  const from = opts.senderName
+    ? // Strip the .near suffix so it reads like a real name when possible.
+      opts.senderName.replace(/\.near$/, "")
+    : "Someone";
   const what =
-    opts.stock && opts.usd ? `$${opts.usd} of ${opts.stock}` : "your first stock";
-  const text = `${who} ${what} on StockWave 🎁\nOpen to claim (no wallet needed):\n${opts.link}`;
+    opts.stock && opts.usd
+      ? `$${opts.usd} of ${opts.stock}`
+      : "a share";
+  // Plain, friendly copy. No jargon, no "token".
+  const text = `${from} gifted you ${what} 🎁\nOpen to claim — no wallet or crypto needed:\n${opts.link}`;
   const base = opts.phone ? `https://wa.me/${opts.phone.replace(/\D/g, "")}` : "https://wa.me/";
   return `${base}?text=${encodeURIComponent(text)}`;
 }

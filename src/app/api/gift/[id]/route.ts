@@ -5,14 +5,14 @@ import { STOCKS } from "@/lib/stocks";
 // Public gift info for the claim page. Never returns depositAddress or keys.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const gift = getGift(id);
+  const gift = await getGift(id);
   if (!gift) return Response.json({ error: "not_found" }, { status: 404 });
   if (gift.status === "AWAITING_DEPOSIT") {
     try {
       const s = await oneClick.status(gift.depositAddress);
-      if (s.status === "SUCCESS") { gift.status = "FUNDED"; saveGift(gift); }
-      else if (s.status === "REFUNDED") { gift.status = "REFUNDED"; saveGift(gift); }
-      else if (s.status === "FAILED") { gift.status = "FAILED"; saveGift(gift); }
+      if (s.status === "SUCCESS") { gift.status = "FUNDED"; await saveGift(gift); }
+      else if (s.status === "REFUNDED") { gift.status = "REFUNDED"; await saveGift(gift); }
+      else if (s.status === "FAILED") { gift.status = "FAILED"; await saveGift(gift); }
     } catch { /* keep current status */ }
   }
   return Response.json({

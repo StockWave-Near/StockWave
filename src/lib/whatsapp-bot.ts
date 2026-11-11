@@ -1,7 +1,7 @@
 import { giftsForPhone, type Gift } from "./store";
 import { STOCKS } from "./stocks";
 
-// WhatsApp bot brain. Pure function: (sender phone, text) -> reply text. Easy to test.
+// WhatsApp bot brain. Pure async function: (sender phone, text) -> reply text. Easy to test.
 // Plain words only: "share", not "token". The bot never sees or sends a claim key (it lives
 // only in the link the sender shared), so it can show gifts but the claim happens from the link.
 
@@ -41,12 +41,12 @@ export function shortAccount(a: string): string {
   return a.length > 20 ? `${a.slice(0, 8)}…${a.slice(-6)}` : a;
 }
 
-export function handleBotMessage(phone: string, text: string): string {
+export async function handleBotMessage(phone: string, text: string): Promise<string> {
   const cmd = text.trim().toLowerCase();
   if (!cmd || ["hi", "hello", "hey", "start", "menu"].includes(cmd)) return `${WELCOME}\n\n${HELP}`;
 
   if (["gifts", "gift", "inbox", "my gifts"].includes(cmd)) {
-    const mine = giftsForPhone(phone);
+    const mine = await giftsForPhone(phone);
     if (mine.length === 0) {
       return "No gifts for this number yet. Ask your friend to send one to this WhatsApp number.";
     }

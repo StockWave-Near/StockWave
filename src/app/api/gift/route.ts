@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
   const idemKey = request.headers.get("idempotency-key")?.slice(0, 100);
   if (idemKey) {
-    const prev = getIdem(`${b.senderAccount}:${idemKey}`);
+    const prev = await getIdem(`${b.senderAccount}:${idemKey}`);
     if (prev) return Response.json(prev);
   }
   if (!config.vaultAccount) {
@@ -58,14 +58,14 @@ export async function POST(request: Request) {
     const depositAddress = quote.quote?.depositAddress;
     if (!depositAddress) throw new Error("no deposit address");
     const id = newGiftId();
-    saveGift({
+    await saveGift({
       id, stock: b.stock, usd: b.usd, note, senderAccount: b.senderAccount,
       recipientPhone: phone || undefined,
       claimPublicKey: b.claimPublicKey, depositAddress,
       status: "AWAITING_DEPOSIT", createdAt: new Date().toISOString(),
     });
     const result = { id, depositAddress, quote };
-    if (idemKey) setIdem(`${b.senderAccount}:${idemKey}`, result);
+    if (idemKey) await setIdem(`${b.senderAccount}:${idemKey}`, result);
     return Response.json(result);
   } catch {
     return Response.json({ error: "gift_create_failed" }, { status: 502 });

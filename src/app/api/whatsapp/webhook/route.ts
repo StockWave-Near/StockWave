@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       for (const m of change.value?.messages ?? []) {
         if (m.type !== "text" || !m.text) continue;
         try {
-          await sendText(m.from, handleBotMessage(m.from, m.text.body.slice(0, 200)));
+          await sendText(m.from, await handleBotMessage(m.from, m.text.body.slice(0, 200)));
         } catch { /* never fail the webhook; Meta would retry */ }
       }
     }
