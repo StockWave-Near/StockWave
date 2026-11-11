@@ -43,7 +43,7 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Set up Twilio WhatsApp Sandbox: webhook live at `https://stockwave-beta.vercel.app/api/whatsapp/webhook`, bot replies working end-to-end
 - [x] Persist gifts in Upstash Redis (KV adapter in `store.ts`, in-memory fallback when env absent)
 - [x] Bot: "link my wallet" — skipped (cut order); bot matches by phone number which is sufficient for demo
-- [ ] Bot: send a "you got a gift" template message when a gift is created for a phone number — ✅ done via Twilio free-form message in `/api/gift` (sandbox: recipient must have joined first)
+- [x] Bot: send a "you got a gift" template message when a gift is created for a phone number — done via Twilio free-form message in `/api/gift` (sandbox: recipient must have joined first)
 
 - [x] Starter code exists: `src/lib/gift-link.ts`, `src/lib/whatsapp.ts`, `/api/whatsapp/share`. Review and extend.
 - [x] **Share to WhatsApp button** on the gift-created screen: opens `wa.me` link with a ready message. Copy-link and native share sheet (`navigator.share`) also added.
