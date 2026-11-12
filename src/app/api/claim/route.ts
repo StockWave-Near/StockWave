@@ -1,6 +1,7 @@
 import { clientIp, rateLimit, tooMany } from "@/lib/rate-limit";
 import { getGift, saveGift } from "@/lib/store";
-import { parseGiftHash } from "@/lib/gift-link";
+import { config } from "@/lib/config";
+import { Account, JsonRpcProvider, teraToGas, type KeyPairString } from "near-api-js";
 
 // POST /api/claim
 // Called by the claim page after the friend signs in with Google.
@@ -11,13 +12,14 @@ import { parseGiftHash } from "@/lib/gift-link";
 //     but do NOT use it here for signing — the actual vault.claim() call (on-chain, signed
 //     by the link key) will happen client-side once near-api-js is wired in.
 //   - For the demo this endpoint marks the gift CLAIMED in the store so the UI advances.
-//   - TODO (Ayush): once the vault is deployed, replace the store-only update with a
+//   - On-chain: signs vault.claim({recipient}) with the link key via near-api-js.
 //     near-api-js call: sign vault.claim({recipient}) with the link key, submit to NEAR RPC.
 //
 // Rate limit: 10 attempts per IP per minute to slow brute-force key guessing.
 
 const NEAR_ACCOUNT = /^[a-z0-9._-]{2,64}$/;
-const PUBKEY_OR_PRIVKEY = /^ed25519:[1-9A-HJ-NP-Za-km-z]{43,44}$/;
+// ed25519 secret keys are 64 bytes (~88 base58 chars).
+const PRIVKEY = /^ed25519:[1-9A-HJ-NP-Za-km-z]{80,90}$/;
 
 export async function POST(request: Request) {
   if (!rateLimit(`claim:${clientIp(request.headers)}`, 10, 60_000)) return tooMany();
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
 
   // Validate key format (must look like an ed25519 key — not a XSS payload etc.)
   // parseGiftHash accepts the #k=... fragment form; here we have the bare key value.
-  const keyValid = PUBKEY_OR_PRIVKEY.test(b.claimKey);
+  const keyValid = PRIVKEY.test(b.claimKey);
   if (!keyValid) {
     return Response.json({ error: "invalid_key" }, { status: 400 });
   }
@@ -55,18 +57,26 @@ export async function POST(request: Request) {
     return Response.json({ error: "not_ready", status: gift.status }, { status: 422 });
   }
 
-  // ── On-chain claim (TODO: wire near-api-js when vault is deployed) ──────────
-  // const keyPair = nearApi.KeyPair.fromString(b.claimKey);
-  // const account = await near.account(config.vaultAccount);
-  // await account.functionCall({
-  //   contractId: config.vaultAccount,
-  //   methodName: "claim",
-  //   args: { recipient: b.recipientAccountId },
-  //   keyPair,          // signs as the vault's function-call key
-  // });
-  // ───────────────────────────────────────────────────────────────────────────
+  // On-chain claim: sign vault.claim({recipient}) with the gift's link key. The key is a
+  // function-call key on the vault account limited to `claim`, so the vault pays the gas.
+  if (!config.vaultAccount) {
+    return Response.json({ error: "vault_not_configured" }, { status: 503 });
+  }
+  try {
+    const provider = new JsonRpcProvider({ url: config.nearRpc });
+    const account = new Account(config.vaultAccount, provider, b.claimKey as KeyPairString);
+    const outcome = await account.callFunction({
+      contractId: config.vaultAccount,
+      methodName: "claim",
+      args: { recipient: b.recipientAccountId },
+      gas: teraToGas(100),
+    });
+    void outcome;
+  } catch (e) {
+    console.error("vault.claim failed", e instanceof Error ? e.message : e);
+    return Response.json({ error: "claim_failed" }, { status: 502 });
+  }
 
-  // For now: mark as CLAIMED in the store so the UI can advance during the demo.
   gift.status = "CLAIMED";
   await saveGift(gift);
 
@@ -75,6 +85,6 @@ export async function POST(request: Request) {
     recipientAccountId: b.recipientAccountId,
     stock: gift.stock,
     usd: gift.usd,
-    // TODO: return the NEAR tx hash once the on-chain call is wired.
+    vault: config.vaultAccount,
   });
 }
