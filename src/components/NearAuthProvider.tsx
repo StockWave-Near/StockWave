@@ -8,6 +8,7 @@ import { FastAuthClient } from "@fast-auth-near/react-sdk/dist/core";
 import { JavascriptProvider } from "@fast-auth-near/javascript-provider";
 // The SDK still expects the v4 `Connection` object; the app itself uses v7.
 import { connect } from "near-api-js-v4";
+import { keyToImplicitAddress } from "near-api-js";
 
 // NEAR Auth (docs.auth.near.org): Google / Apple / email / passkey login that controls a real
 // NEAR key held by an MPC network. Testnet uses the shared dev clientId from
@@ -23,17 +24,18 @@ export type NearIdentity = {
   loggedIn: boolean;
   /** Implicit NEAR account id (64-char hex of the user's ed25519 public key), or null. */
   accountId: string | null;
+  /** Why the account could not be read, when signed in but key derivation failed. */
+  error: string | null;
   login: () => void | Promise<void>;
   logout: () => void | Promise<void>;
 };
 
-const EMPTY: NearIdentity = { ready: false, loggedIn: false, accountId: null, login: () => {}, logout: () => {} };
+const EMPTY: NearIdentity = { ready: false, loggedIn: false, accountId: null, error: null, login: () => {}, logout: () => {} };
 const Ctx = createContext<NearIdentity>(EMPTY);
 
 /** Components read the signed-in user through this; it is safe to call anywhere in the app. */
 export const useNearIdentity = () => useContext(Ctx);
 
-const hex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 
 export default function NearAuthProvider({ children }: { children: React.ReactNode }) {
   const [identity, setIdentity] = useState<NearIdentity>(EMPTY);
@@ -47,15 +49,19 @@ export default function NearAuthProvider({ children }: { children: React.ReactNo
       const client = new FastAuthClient(provider, connection, network, "");
       // Re-read the session. Called on load and again after every login/logout, because the
       // login popup finishes after our first check and would otherwise never be noticed.
-      const refresh = async (): Promise<Pick<NearIdentity, "loggedIn" | "accountId">> => {
+      const refresh = async (): Promise<Pick<NearIdentity, "loggedIn" | "accountId" | "error">> => {
+        let loggedIn = false;
         try {
-          if (!(await client.isLoggedIn())) return { loggedIn: false, accountId: null };
+          loggedIn = await client.isLoggedIn();
+          if (!loggedIn) return { loggedIn: false, accountId: null, error: null };
           const signer = await client.getSigner();
-          const pk = await signer.getPublicKey("ed25519");
-          return { loggedIn: true, accountId: hex(pk.data as Uint8Array) };
+          // The SDK returns the MPC contract's raw answer: a string like "ed25519:<base58>".
+          const pk = String(await signer.getPublicKey("ed25519"));
+          return { loggedIn: true, accountId: keyToImplicitAddress(pk), error: null };
         } catch (e) {
           console.error("NEAR Auth session check failed", e);
-          return { loggedIn: false, accountId: null };
+          // Keep loggedIn true if the login itself worked, so the UI can show what failed.
+          return { loggedIn, accountId: null, error: e instanceof Error ? e.message : String(e) };
         }
       };
       const apply = async () => {
@@ -70,7 +76,7 @@ export default function NearAuthProvider({ children }: { children: React.ReactNo
         try { await client.logout(); } catch (e) { console.error("NEAR Auth logout failed", e); }
         await apply();
       };
-      if (live) setIdentity({ ready: true, loggedIn: false, accountId: null, login, logout });
+      if (live) setIdentity({ ready: true, loggedIn: false, accountId: null, error: null, login, logout });
       await apply();
     })().catch((e) => console.error("NEAR Auth init failed", e));
     return () => { live = false; };
