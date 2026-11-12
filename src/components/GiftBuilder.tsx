@@ -103,22 +103,15 @@ export default function GiftBuilder() {
     setBusy(true);
     setResult(null);
     try {
-      const elig = await (await fetch(`/api/eligible?declared=${declared ? 1 : 0}`)).json();
-      if (!elig.eligible) {
-        setResult({
-          ok: false,
-          text: elig.reason === "region_blocked"
-            ? "Sorry, tokenized stocks are not available in your region yet."
-            : "Please confirm the checkbox below first.",
-        });
-        return;
-      }
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ stock, usd }),
       });
-      if (!res.ok) throw new Error("quote");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(`quote_${res.status}_${err.error ?? "unknown"}`);
+      }
       const data = (await res.json()) as Quote;
       const out = data.quote?.quote?.amountOutFormatted;
       const outUsd = data.quote?.quote?.amountOutUsd;
@@ -130,8 +123,15 @@ export default function GiftBuilder() {
         ok: true,
         text: `You pay $${usd}. Your friend gets ${sharesText} of ${chosen.name}${usdText}${etaText}. Nothing is signed yet.`,
       });
-    } catch {
-      setResult({ ok: false, text: "We could not get a price right now. Please try again in a moment." });
+    } catch (e) {
+      console.error("preview failed:", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      const userText = msg.includes("429")
+        ? "Too many requests — please wait a moment and try again."
+        : msg.includes("502") || msg.includes("504")
+        ? "Price service is busy right now. Please try again in a few seconds."
+        : "We could not get a price right now. Please try again in a moment.";
+      setResult({ ok: false, text: userText });
     } finally {
       setBusy(false);
     }
