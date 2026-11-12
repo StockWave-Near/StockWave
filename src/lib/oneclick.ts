@@ -56,7 +56,7 @@ export const oneClick = {
   quote: (body: QuoteRequest) =>
     call<unknown>("/v0/quote", { method: "POST", body: JSON.stringify(body) }),
   status: (depositAddress: string) =>
-    call<{ status: SwapStatus }>(
+    call<{ status: SwapStatus; swapDetails?: { amountOut?: string } }>(
       `/v0/status?depositAddress=${encodeURIComponent(depositAddress)}`,
     ),
   submitDeposit: (txHash: string, depositAddress: string) =>

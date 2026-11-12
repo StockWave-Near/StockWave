@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       refundTo: b.senderAccount,
       refundType: "ORIGIN_CHAIN",
       deadline: new Date(Date.now() + 30 * 60_000).toISOString(),
-    })) as { quote?: { depositAddress?: string } };
+    })) as { quote?: { depositAddress?: string; minAmountOut?: string; amountOut?: string } };
     const depositAddress = quote.quote?.depositAddress;
     if (!depositAddress) throw new Error("no deposit address");
     const id = newGiftId();
@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       id, stock: b.stock, usd: b.usd, note, senderAccount: b.senderAccount,
       recipientPhone: phone || undefined,
       claimPublicKey: b.claimPublicKey, depositAddress,
+      amountOut: quote.quote?.minAmountOut ?? quote.quote?.amountOut,
       status: "AWAITING_DEPOSIT", createdAt: new Date().toISOString(),
     });
     const result = { id, depositAddress, quote };

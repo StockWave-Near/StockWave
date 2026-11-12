@@ -13,6 +13,8 @@ export type Gift = {
   recipientPhone?: string;
   claimPublicKey: string;
   depositAddress: string;
+  /** Quoted minimum stock amount (base units); fallback if the swap status omits it. */
+  amountOut?: string;
   status: "AWAITING_DEPOSIT" | "FUNDED" | "CLAIMED" | "REFUNDED" | "FAILED";
   createdAt: string;
 };
