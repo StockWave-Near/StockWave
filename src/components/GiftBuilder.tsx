@@ -36,6 +36,7 @@ export default function GiftBuilder() {
   const [stock, setStock] = useState<Key>("GOOGL");
   const [usd, setUsd] = useState(20);
   const [note, setNote] = useState("");
+  const [phone, setPhone] = useState("");
   const [declared, setDeclared] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -150,6 +151,7 @@ export default function GiftBuilder() {
           stock, usd, note, declaredEligible: declared,
           senderAccount: senderAccountId(),
           claimPublicKey: pubB58,
+          recipientPhone: phone.replace(/\D/g, "") || undefined,
         }),
       });
       if (!res.ok) {
@@ -236,6 +238,7 @@ export default function GiftBuilder() {
           stock={s.name}
           usd={created.usd}
           senderName={privyUser?.google?.email?.split("@")[0] ?? privyUser?.twitter?.username ?? undefined}
+          recipientPhone={phone.replace(/\D/g, "") || undefined}
         />
 
         <p className="fine" style={{ marginTop: 20 }}>
@@ -245,7 +248,7 @@ export default function GiftBuilder() {
         <button
           className="pill"
           style={{ marginTop: 24, background: "rgba(44,58,34,0.12)", color: "inherit" }}
-          onClick={() => { setStage("build"); setCreated(null); setResult(null); setPending(null); }}
+          onClick={() => { setStage("build"); setCreated(null); setResult(null); setPending(null); setPhone(""); }}
         >
           Send another gift
         </button>
@@ -281,6 +284,17 @@ export default function GiftBuilder() {
 
         <label className="field" htmlFor="note">A short note (optional)</label>
         <input id="note" className="input" maxLength={140} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Happy birthday!" />
+
+        <label className="field" htmlFor="phone">Recipient WhatsApp number (optional)</label>
+        <input
+          id="phone"
+          className="input"
+          type="tel"
+          maxLength={20}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="+91 98765 43210"
+        />
 
         <label className="check">
           <input type="checkbox" checked={declared} onChange={(e) => setDeclared(e.target.checked)} />
