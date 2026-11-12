@@ -23,8 +23,8 @@ export type NearIdentity = {
   loggedIn: boolean;
   /** Implicit NEAR account id (64-char hex of the user's ed25519 public key), or null. */
   accountId: string | null;
-  login: () => void;
-  logout: () => void;
+  login: () => void | Promise<void>;
+  logout: () => void | Promise<void>;
 };
 
 const EMPTY: NearIdentity = { ready: false, loggedIn: false, accountId: null, login: () => {}, logout: () => {} };
@@ -45,21 +45,33 @@ export default function NearAuthProvider({ children }: { children: React.ReactNo
       const provider = new JavascriptProvider({ network, clientId });
       // The relayer URL is only used for signing/gasless flows, which we do not use.
       const client = new FastAuthClient(provider, connection, network, "");
-      const login = () => client.login();
-      const logout = () => client.logout();
-      let loggedIn = false;
-      let accountId: string | null = null;
-      try {
-        loggedIn = await client.isLoggedIn();
-        if (loggedIn) {
+      // Re-read the session. Called on load and again after every login/logout, because the
+      // login popup finishes after our first check and would otherwise never be noticed.
+      const refresh = async (): Promise<Pick<NearIdentity, "loggedIn" | "accountId">> => {
+        try {
+          if (!(await client.isLoggedIn())) return { loggedIn: false, accountId: null };
           const signer = await client.getSigner();
           const pk = await signer.getPublicKey("ed25519");
-          accountId = hex(pk.data as Uint8Array);
+          return { loggedIn: true, accountId: hex(pk.data as Uint8Array) };
+        } catch (e) {
+          console.error("NEAR Auth session check failed", e);
+          return { loggedIn: false, accountId: null };
         }
-      } catch (e) {
-        console.error("NEAR Auth session check failed", e);
-      }
-      if (live) setIdentity({ ready: true, loggedIn, accountId, login, logout });
+      };
+      const apply = async () => {
+        const state = await refresh();
+        if (live) setIdentity((prev) => ({ ...prev, ...state, ready: true }));
+      };
+      const login = async () => {
+        try { await client.login(); } catch (e) { console.error("NEAR Auth login failed", e); }
+        await apply();
+      };
+      const logout = async () => {
+        try { await client.logout(); } catch (e) { console.error("NEAR Auth logout failed", e); }
+        await apply();
+      };
+      if (live) setIdentity({ ready: true, loggedIn: false, accountId: null, login, logout });
+      await apply();
     })().catch((e) => console.error("NEAR Auth init failed", e));
     return () => { live = false; };
   }, []);
