@@ -1,3 +1,4 @@
+import AuthStatus from "@/components/AuthStatus";
 import Image from "next/image";
 import GiftBuilder from "@/components/GiftBuilder";
 import Catalog from "@/components/Catalog";
@@ -35,6 +36,7 @@ export default function Home() {
           <a href="#why">Why StockWave</a>
           <a href="#faq">FAQ</a>
         </div>
+        <AuthStatus />
         <a className="pill" href="#send">Send a gift</a>
       </nav>
 
