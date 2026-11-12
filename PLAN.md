@@ -23,12 +23,12 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Claim page `/g/[id]`: reads `#k` locally, Google/X login via Privy, claim button calls `/api/claim`, success screen
 - [x] Social login: Privy (Google + X) wired via `PrivyProvider` in `Providers.tsx`
 - [x] Vault contract `contracts/stockwave-vault` (Rust, near-sdk 5.15.1): register_gift, claim by function-call key, sender reclaim after expiry, pause, token allowlist, failed-payout restore. 14 unit tests pass.
-- [ ] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys
-- [ ] Wire backend: call `register_gift` once a gift is FUNDED (registrar key), `/api/relay` only if the fallback is needed
-- [ ] Claim flow in the browser: sign `claim({recipient})` with the link key — `/api/claim` exists, on-chain vault call pending deploy
+- [x] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys — deployed to testnet (`18c48e5a…`), tx `GAw9xw1F…`
+- [x] Wire backend: call `register_gift` once a gift is FUNDED (registrar key) — `vault.ts` / `syncGiftFunding` handles this in `/api/gift/[id]`
+- [x] Claim flow in the browser: sign `claim({recipient})` with the link key — `/api/claim` calls `vault.claim()` on-chain via near-api-js, vault pays gas
 - [x] Region gate: `/api/eligible`, US/CA blocked by IP header, `declaredEligible` required by `/api/gift` (451 if blocked)
 - [x] Rate limits on quote, gift and WhatsApp share (429) and `Idempotency-Key` on `/api/gift`
-- [x] Security test suite started: `npm test` (10 tests: region gate, rate limit, link parsing, bot privacy). Grow toward 40+
+- [x] Security test suite: `npm test` — 61 tests across 9 attack categories, all pass
 - [ ] Error and refund states, mobile check (desktop screenshot checked, phone width not yet)
 - [ ] Enable the other 25 assets for sending (add them to `src/lib/stocks.ts`; catalog already lists them as "Coming soon")
 - [ ] Copy brand and token logos into `public/` (they load from Simple Icons and CoinGecko URLs today, with a monogram fallback)
