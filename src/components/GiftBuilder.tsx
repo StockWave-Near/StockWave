@@ -3,7 +3,8 @@
 import StockIcon from "./StockIcon";
 import ShareButtons from "./ShareButtons";
 import { useState, useEffect, useRef } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useNearIdentity } from "./NearAuthProvider";
+// import { usePrivy } from "@privy-io/react-auth";
 
 const STOCKS = [
   { key: "GOOGL", name: "Google", sub: "Alphabet Class A", logo: "https://cdn.simpleicons.org/google/4285F4", color: "#4285F4" },
@@ -46,23 +47,28 @@ export default function GiftBuilder() {
   const [fundingStatus, setFundingStatus] = useState<string>("Waiting for payment…");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // NEAR Auth gives us the signed-in user; their account is a real implicit NEAR account.
+  const { ready: authReady, loggedIn, accountId, login: authLogin } = useNearIdentity();
+  const senderAccountId = () => accountId ?? "";
+
+  // ── Previous login (Privy), kept for reference ──
   // Privy gives us the logged-in user. PrivyProvider wraps the whole app in Providers.tsx
   // so usePrivy() is always safe to call. If the app id is missing it returns unauthenticated.
-  const { ready: privyReady, user: privyUser, login: privyLogin } = usePrivy();
-
+  // const { ready: privyReady, user: privyUser, login: privyLogin } = usePrivy();
+  //
   // Derive a NEAR-compatible account id from the Privy user (same logic as ClaimPage).
-  function senderAccountId(): string {
-    if (!privyUser) return "sender.near"; // fallback for unauthenticated / no Privy
-    if (privyUser.google?.email) {
-      const local = privyUser.google.email
-        .split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
-      return `${local}.near`;
-    }
-    if (privyUser.twitter?.username) {
-      return `${privyUser.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
-    }
-    return `${privyUser.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
-  }
+  // function senderAccountId(): string {
+  //   if (!privyUser) return "sender.near"; // fallback for unauthenticated / no Privy
+  //   if (privyUser.google?.email) {
+  //     const local = privyUser.google.email
+  //       .split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
+  //     return `${local}.near`;
+  //   }
+  //   if (privyUser.twitter?.username) {
+  //     return `${privyUser.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
+  //   }
+  //   return `${privyUser.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
+  // }
 
   const chosen = STOCKS.find((s) => s.key === stock)!;
 
@@ -242,7 +248,7 @@ export default function GiftBuilder() {
           link={created.link}
           stock={s.name}
           usd={created.usd}
-          senderName={privyUser?.google?.email?.split("@")[0] ?? privyUser?.twitter?.username ?? undefined}
+          senderName={undefined}
           recipientPhone={phone.replace(/\D/g, "") || undefined}
         />
 
@@ -310,21 +316,21 @@ export default function GiftBuilder() {
           <button className="pill" onClick={preview} disabled={busy} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
             {busy ? "Checking…" : "Preview price"} <span className="arrow">↗</span>
           </button>
-          {!privyReady ? null : !privyUser && privyLogin ? (
-            <button className="pill" onClick={() => privyLogin()} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
+          {!authReady ? null : !loggedIn ? (
+            <button className="pill" onClick={() => authLogin()} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
               Sign in to send <span className="arrow">↗</span>
             </button>
           ) : (
-            <button className="pill" onClick={createLink} disabled={busy || !declared}>
+            <button className="pill" onClick={createLink} disabled={busy || !declared || !accountId}>
               {busy ? "Creating…" : "Create gift link"} <span className="arrow">↗</span>
             </button>
           )}
         </div>
 
-        {privyUser && (
+        {loggedIn && accountId && (
           <p className="fine">
             Sending as{" "}
-            <strong>{privyUser.google?.email ?? (privyUser.twitter?.username ? `@${privyUser.twitter.username}` : senderAccountId())}</strong>
+            <strong>{accountId.slice(0, 8)}…{accountId.slice(-6)}</strong>
           </p>
         )}
 

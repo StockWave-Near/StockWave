@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useNearIdentity } from "@/components/NearAuthProvider";
+// import { usePrivy } from "@privy-io/react-auth";
 import WaveLogo from "@/components/WaveLogo";
 import StockIcon from "@/components/StockIcon";
 
@@ -125,7 +126,7 @@ export default function ClaimPage({ id }: { id: string }) {
       ) : (
         <>
           <p style={{ fontSize: 14, opacity: 0.75, textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
-            Sign in with Google to claim this share. No wallet, no fees, no crypto.
+            Sign in to claim this share. No wallet, no fees, no crypto.
           </p>
           <ClaimAction claimKey={claimKey} giftId={id} gift={gift} />
         </>
@@ -135,34 +136,16 @@ export default function ClaimPage({ id }: { id: string }) {
 }
 
 function ClaimAction({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
-  if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
-    return (
-      <p className="fine" style={{ textAlign: "center" }}>
-        Sign-in is not configured yet (missing NEXT_PUBLIC_PRIVY_APP_ID).
-      </p>
-    );
-  }
-  return <PrivyClaimButton claimKey={claimKey} giftId={giftId} gift={gift} />;
+  return <NearClaimButton claimKey={claimKey} giftId={giftId} gift={gift} />;
 }
 
-function PrivyClaimButton({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
-  const { ready, authenticated, user, login } = usePrivy();
+function NearClaimButton({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
+  const { ready, loggedIn, accountId, login } = useNearIdentity();
   const [status, setStatus] = useState<"idle" | "claiming" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Derive a NEAR-compatible account id from the Privy user.
-  // Format: google_<sanitised-email-local> or twitter_<username>, falling back to privy sub.
-  function recipientAccountId(): string {
-    if (!user) return "";
-    if (user.google?.email) {
-      const local = user.google.email.split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
-      return `${local}.near`;
-    }
-    if (user.twitter?.username) {
-      return `${user.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
-    }
-    return `${user.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
-  }
+  // The recipient is the user's real NEAR account (implicit id from their NEAR Auth key).
+  const recipientAccountId = () => accountId ?? "";
 
   async function claim() {
     setStatus("claiming");
@@ -221,14 +204,14 @@ function PrivyClaimButton({ claimKey, giftId, gift }: { claimKey: string; giftId
     <>
       <button
         className="pill"
-        disabled={!ready || status === "claiming"}
-        onClick={authenticated ? claim : () => login()}
+        disabled={!ready || status === "claiming" || (loggedIn && !accountId)}
+        onClick={loggedIn ? claim : () => login()}
       >
-        {status === "claiming" ? "Claiming…" : authenticated ? "Claim my share" : "Sign in to claim"}
+        {status === "claiming" ? "Claiming…" : loggedIn ? "Claim my share" : "Sign in to claim"}
       </button>
-      {authenticated && status === "idle" && (
+      {loggedIn && accountId && status === "idle" && (
         <p className="fine" style={{ textAlign: "center" }}>
-          Signed in as {user?.google?.email ?? (user?.twitter?.username ? `@${user.twitter.username}` : "your account")}
+          Signed in as {accountId.slice(0, 8)}…{accountId.slice(-6)}
         </p>
       )}
       {status === "error" && (
@@ -265,3 +248,23 @@ function ClaimShell({ children }: { children: React.ReactNode }) {
     </main>
   );
 }
+
+
+// ── Previous login (Privy), kept for reference ──────────────────────────────────────────────
+// function PrivyClaimButton({ claimKey, giftId, gift }: { claimKey: string; giftId: string; gift: GiftInfo }) {
+//   const { ready, authenticated, user, login } = usePrivy();
+//   // Derive a NEAR-compatible account id from the Privy user.
+//   function recipientAccountId(): string {
+//     if (!user) return "";
+//     if (user.google?.email) {
+//       const local = user.google.email.split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 50);
+//       return `${local}.near`;
+//     }
+//     if (user.twitter?.username) {
+//       return `${user.twitter.username.toLowerCase().replace(/[^a-z0-9._-]/g, "-")}.near`;
+//     }
+//     return `${user.id.replace(/[^a-z0-9]/g, "").slice(0, 20)}.near`;
+//   }
+//   // ...claim() and the JSX were identical to NearClaimButton, with `authenticated` for `loggedIn`.
+// }
+// if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) { /* "Sign-in is not configured yet" message */ }
