@@ -314,15 +314,15 @@ export default function GiftBuilder() {
 
         <div className="row" style={{ marginTop: 4, flexWrap: "wrap" }}>
           <button className="pill" onClick={preview} disabled={busy} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
-            {busy ? "Checking…" : "Preview price"} <span className="arrow">↗</span>
+            {busy ? "Checking…" : "Preview price"}
           </button>
           {!authReady ? null : !loggedIn ? (
             <button className="pill" onClick={() => authLogin()} style={{ background: "rgba(44,58,34,0.12)", color: "inherit" }}>
-              Sign in to send <span className="arrow">↗</span>
+              Sign in to send
             </button>
           ) : (
             <button className="pill" onClick={createLink} disabled={busy || !declared || !accountId}>
-              {busy ? "Creating…" : "Create gift link"} <span className="arrow">↗</span>
+              {busy ? "Creating…" : "Create gift link"}
             </button>
           )}
         </div>

@@ -42,7 +42,7 @@ export default function Home() {
         <span className="eyebrow">Gift a first stock</span>
         <h1>Send a share<br />like you send a text</h1>
         <p>Give a friend their first stock as a link. They sign in with Google and own a real tokenized share, with no wallet, seed phrase or gas fee.</p>
-        <a className="pill" href="#send">Get started today <span className="arrow">↗</span></a>
+        <a className="pill" href="#send">Get started today</a>
         <ul className="trust">
           <li>No wallet</li><li>No gas</li><li>Works on WhatsApp</li>
         </ul>
