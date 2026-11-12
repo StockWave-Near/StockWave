@@ -26,8 +26,8 @@ export type SwapStatus =
   | "REFUNDED"
   | "FAILED";
 
-// Abort after 10 seconds — prevents Vercel function timeouts from hanging the UI.
-const TIMEOUT_MS = 10_000;
+// 25 seconds — Vercel functions time out at 30s, so this gives a safe margin.
+const TIMEOUT_MS = 25_000;
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
@@ -47,7 +47,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     return (await res.json()) as T;
   } catch (e) {
     if (e instanceof Error && e.name === "AbortError") {
-      throw new OneClickError(504, "1Click API timed out");
+      throw new OneClickError(504, "1Click API timed out after 25s");
     }
     throw e;
   } finally {

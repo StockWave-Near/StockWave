@@ -14,7 +14,7 @@ const STOCKS = [
 type Key = (typeof STOCKS)[number]["key"];
 const AMOUNTS = [5, 10, 20, 50];
 
-type Quote = { quote?: { quote?: { amountOutFormatted?: string; amountOutUsd?: string; timeEstimate?: number } } };
+type Quote = { cached?: boolean; quote?: { quote?: { amountOutFormatted?: string; amountOutUsd?: string; timeEstimate?: number } } };
 
 type GiftPending = {
   id: string;
@@ -125,9 +125,10 @@ export default function GiftBuilder() {
       const sharesText = out ? `${Number(out).toFixed(6)} shares` : "a share";
       const usdText = outUsd ? ` (~$${Number(outUsd).toFixed(2)})` : "";
       const etaText = eta ? ` · arrives in ~${eta}s` : "";
+      const staleNote = (data as { cached?: boolean }).cached ? " (indicative price)" : "";
       setResult({
         ok: true,
-        text: `You pay $${usd}. Your friend gets ${sharesText} of ${chosen.name}${usdText}${etaText}. Nothing is signed yet.`,
+        text: `You pay $${usd}. Your friend gets ${sharesText} of ${chosen.name}${usdText}${etaText}${staleNote}. Nothing is signed yet.`,
       });
     } catch (e) {
       console.error("preview failed:", e);
