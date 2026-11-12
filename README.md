@@ -6,7 +6,7 @@
 
 **Send a share like you send a text.**
 
-Gift a friend their first stock as a link. They sign in with Google, own a real tokenized share, and never see a wallet, seed phrase or gas fee.
+Gift a friend their first stock as a link. They sign in with NEAR Auth (Google, Apple, email or passkey), own a real tokenized share, and never see a wallet, seed phrase or gas fee.
 
 `NEAR Intents` · `Ondo tokenized stocks` · `Function-call access keys` · `WhatsApp` · `Next.js 16` · `Rust (near-sdk)`
 
@@ -44,7 +44,7 @@ Owning a stock for the first time is full of friction: a brokerage account, iden
 2. **Pay.** The sender pays in USDC from any chain. NEAR Intents (the 1Click API) swaps it into an Ondo tokenized stock.
 3. **Link.** The sender's browser generates a one-time claim keypair. Only the public key goes to the server. The private key is placed in the link fragment (`/g/<id>#k=...`), which browsers never send to any server.
 4. **Share.** The sender shares the link over WhatsApp, copies it, or uses the phone's share sheet.
-5. **Claim.** The friend opens the link, signs in with Google and taps Claim. The link's key calls the vault, the vault pays the gas, and the share lands in the friend's account.
+5. **Claim.** The friend opens the link, signs in with NEAR Auth and taps Claim. The link's key calls the vault, the vault pays the gas, and the share lands in the friend's account.
 
 ```
  SENDER                                                  FRIEND
@@ -53,7 +53,7 @@ Owning a stock for the first time is full of friction: a brokerage account, iden
  browser creates claim keypair (public key only → server)
  link = /g/<id>#k=<private key>   (fragment never leaves the browser)
  share on WhatsApp / copy / share sheet
-                                                         open link ─► Google login ─► Claim
+                                                         open link ─► NEAR Auth login ─► Claim
                                                          link key calls vault.claim(recipient)
                                                          vault pays gas ─► share in friend's account
 ```
@@ -64,7 +64,7 @@ Owning a stock for the first time is full of friction: a brokerage account, iden
 |---|---|
 | **NEAR Intents (1Click)** | One payment and delivery rail: pay from any chain, receive a tokenized stock, no bridging for the user. |
 | **Function-call access keys** | The gift link carries a key that can only call `claim` on the vault, for that single gift. This is what makes links non-custodial and gasless. EVM chains have no direct equivalent. |
-| **Implicit accounts from social login** | The friend gets a real on-chain account from a Google sign-in, with no wallet install. |
+| **NEAR Auth (social login)** | Google, Apple, email or passkey login controls a real NEAR key held by an MPC network (non-custodial). The friend's account is the implicit account of that key, so the share is delivered to a real NEAR account with no wallet install and no seed phrase. See [docs.auth.near.org](https://docs.auth.near.org). |
 | **Vault-paid gas** | The vault pays for the claim, bounded by a per-key allowance. NEP-366 meta-transactions are the fallback. |
 | **On-chain notebook** (planned) | Each gift is recorded so it can be returned one day, inspired by the Tamil custom of writing wedding gifts in a family notebook. |
 
@@ -93,15 +93,15 @@ The bot never holds or sends a claim key. The key exists only in the link the se
 | Gift link builder and parser (key kept in the fragment) | Done |
 | WhatsApp share link and `POST /api/whatsapp/share` | Done |
 | WhatsApp bot logic and signed webhook | Done — Twilio WhatsApp Sandbox live |
-| Vault contract (Rust) with 14 passing unit tests | Done, testnet deploy pending |
+| Vault contract (Rust) with 14 passing unit tests | Done, deployed on testnet |
 | Web UI: landing page, gift builder with dry-run preview, funding/status screen, FAQ, footer, logo and favicon | Done (creating the link needs sign-in) |
 | Web UI: claim page shell with OG metadata | Done (claim button needs social login) |
 | Gift link share: WhatsApp, copy, native share sheet | Done |
 | Referrer-Policy and security headers | Done |
 | Persistent database (Upstash Redis, in-memory fallback) | Done |
-| Browser claim flow and Google login provider | Not started |
+| Browser claim flow and login (NEAR Auth, testnet; Privy code kept commented out) | Done on testnet. Mainnet needs a whitelisted NEAR Auth clientId |
 | Enable sending for the other 25 assets | Not started |
-| Backend call to register a funded gift on the vault | Not started |
+| `/api/claim` calls `vault.claim()`; backend calls `register_gift` after a successful swap | Done on testnet |
 | Notebook contract and "Return the favour" | Not started |
 | Region gate (US/CA blocked, declaration required), rate limits, idempotency | Done |
 | Security test suite (61 tests, `npm test`) | Done — 61 attacks, all refused |
@@ -174,6 +174,8 @@ cargo near build    # when ready to deploy
 
 ## Getting started
 
+Login is [NEAR Auth](https://docs.auth.near.org) (`@fast-auth-near/*`). The previous Privy login is kept as commented-out code in `Providers.tsx`, `ClaimPage.tsx` and `GiftBuilder.tsx`.
+
 Requirements: Node.js 20 or newer, Rust 1.93 or newer (for the contract).
 
 ```bash
@@ -187,7 +189,10 @@ npm run dev
 | `ONECLICK_API_KEY` | 1Click API key (partners.near-intents.org). Without it, higher fees apply. |
 | `STOCKWAVE_VAULT_ACCOUNT` | NEAR account of the deployed vault. |
 | `NEXT_PUBLIC_APP_URL` | Public base URL used to build gift links. |
-| `NEAR_RPC_URL` | NEAR RPC endpoint. |
+| `NEAR_RPC_URL` | NEAR RPC endpoint (testnet for now). |
+| `NEAR_REGISTRAR_PRIVATE_KEY` | Server-only key of the vault's registrar account; signs `register_gift`. Never commit it. |
+| `NEXT_PUBLIC_NEAR_AUTH_NETWORK` | `testnet` (default) or `mainnet`. |
+| `NEXT_PUBLIC_NEAR_AUTH_CLIENT_ID` | NEAR Auth Auth0 client id. Defaults to the shared testnet dev id. Mainnet needs an id from the [NEAR Auth whitelist form](https://docs.auth.near.org/home/apply). |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | Twilio WhatsApp Sandbox credentials. |
 | `TWILIO_WHATSAPP_FROM` | Sandbox sender number (always `+14155238886`). |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis for persistent gift storage (falls back to in-memory when absent). |

@@ -18,10 +18,10 @@ Status: `[x]` done, `[ ]` todo.
 - [x] Landing + builder UI `/` (forest-quiet glass style): stock cards, amount chips, note, region confirm, dry-run preview. Create-link button still needs sign-in
 - [x] Full catalog section: all 28 Ondo assets on NEAR Intents (Stocks 11, ETFs 5, Bonds & cash 5, Portfolios 7) with logo image URLs, tabs, search, indicative prices (`src/lib/ondo-catalog.ts`)
 - [x] Landing page sections (hero, stock cards, builder, how it works, WhatsApp and claim previews, features, FAQ, CTA), professional footer component, sage-badge logo and favicon. No hackathon wording on the site
-- [x] Create-link button in the builder: generate claim keypair in browser, call `/api/gift` with `Idempotency-Key`, show link; `senderAccount` wired from Privy logged-in user
+- [x] Create-link button in the builder: generate claim keypair in browser, call `/api/gift` with `Idempotency-Key`, show link; `senderAccount` wired from the NEAR Auth account
 - [x] Funding + status polling UI: polls `/api/status` every 4s, advances to gift-ready screen on SUCCESS
-- [x] Claim page `/g/[id]`: reads `#k` locally, Google/X login via Privy, claim button calls `/api/claim`, success screen
-- [x] Social login: Privy (Google + X) wired via `PrivyProvider` in `Providers.tsx`
+- [x] Claim page `/g/[id]`: reads `#k` locally, login via NEAR Auth, claim button calls `/api/claim`, success screen
+- [x] Social login: NEAR Auth (testnet) via `NearAuthProvider`; Privy code commented out, not removed
 - [x] Vault contract `contracts/stockwave-vault` (Rust, near-sdk 5.15.1): register_gift, claim by function-call key, sender reclaim after expiry, pause, token allowlist, failed-payout restore. 14 unit tests pass.
 - [x] Verify vault payout call against the real intents contract on testnet (`mt_transfer` signature is [U]); deploy; delete full-access keys — deployed to testnet (`18c48e5a…`), tx `GAw9xw1F…`
 - [x] Wire backend: call `register_gift` once a gift is FUNDED (registrar key) — `vault.ts` / `syncGiftFunding` handles this in `/api/gift/[id]`
