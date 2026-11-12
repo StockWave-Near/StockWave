@@ -48,7 +48,7 @@ export default function GiftBuilder() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // NEAR Auth gives us the signed-in user; their account is a real implicit NEAR account.
-  const { ready: authReady, loggedIn, accountId, login: authLogin } = useNearIdentity();
+  const { ready: authReady, loggedIn, accountId, error: authError, login: authLogin } = useNearIdentity();
   const senderAccountId = () => accountId ?? "";
 
   // ── Previous login (Privy), kept for reference ──
@@ -327,6 +327,11 @@ export default function GiftBuilder() {
           )}
         </div>
 
+        {loggedIn && !accountId && (
+          <p className="fine" style={{ color: "#c0392b" }}>
+            Signed in, but your NEAR account could not be read{authError ? `: ${authError.slice(0, 140)}` : "."}
+          </p>
+        )}
         {loggedIn && accountId && (
           <p className="fine">
             Sending as{" "}
