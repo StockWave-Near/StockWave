@@ -13,7 +13,7 @@ const STOCKS = [
 type Key = (typeof STOCKS)[number]["key"];
 const AMOUNTS = [5, 10, 20, 50];
 
-type Quote = { quote?: { amountOutFormatted?: string } };
+type Quote = { quote?: { quote?: { amountOutFormatted?: string; amountOutUsd?: string; timeEstimate?: number } } };
 
 type GiftPending = {
   id: string;
@@ -120,10 +120,15 @@ export default function GiftBuilder() {
       });
       if (!res.ok) throw new Error("quote");
       const data = (await res.json()) as Quote;
-      const out = data.quote?.amountOutFormatted;
+      const out = data.quote?.quote?.amountOutFormatted;
+      const outUsd = data.quote?.quote?.amountOutUsd;
+      const eta = data.quote?.quote?.timeEstimate;
+      const sharesText = out ? `${Number(out).toFixed(6)} shares` : "a share";
+      const usdText = outUsd ? ` (~$${Number(outUsd).toFixed(2)})` : "";
+      const etaText = eta ? ` · arrives in ~${eta}s` : "";
       setResult({
         ok: true,
-        text: `You pay about $${usd}. Your friend gets ${out ? `${Number(out).toFixed(4)} shares of` : "a share of"} ${chosen.name}. Nothing is signed yet.`,
+        text: `You pay $${usd}. Your friend gets ${sharesText} of ${chosen.name}${usdText}${etaText}. Nothing is signed yet.`,
       });
     } catch {
       setResult({ ok: false, text: "We could not get a price right now. Please try again in a moment." });
