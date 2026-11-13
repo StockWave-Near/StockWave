@@ -138,6 +138,8 @@ export default function GiftBuilder() {
       const msg = e instanceof Error ? e.message : String(e);
       const userText = msg.includes("429")
         ? "Too many requests — please wait a moment and try again."
+        : msg.includes("no_liquidity")
+        ? "No liquidity available for this pair right now. Please try again in a few seconds."
         : msg.includes("502") || msg.includes("504")
         ? "Price service is busy right now. Please try again in a few seconds."
         : "We could not get a price right now. Please try again in a moment.";

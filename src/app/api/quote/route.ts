@@ -49,17 +49,24 @@ export async function POST(request: Request) {
       return Response.json({ stock: b.stock, usd: b.usd, quote });
     } catch (e) {
       lastErr = e;
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      // "No liquidity" is a permanent failure for this request — no point retrying.
+      if (e instanceof Error && e.message.includes("No liquidity")) break;
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
     }
   }
 
   // All attempts failed — return cached quote if fresh enough.
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-    console.warn("quote: returning cached result after 3 failures", lastErr instanceof Error ? lastErr.message : lastErr);
+    console.warn("quote: returning cached result after failures", lastErr instanceof Error ? lastErr.message : lastErr);
     return Response.json({ stock: b.stock, usd: b.usd, quote: cached.quote, cached: true });
   }
 
-  console.error("quote failed after 3 attempts, no cache", lastErr instanceof Error ? lastErr.message : lastErr);
-  return Response.json({ error: "quote_unavailable" }, { status: 502 });
+  // Surface the specific error so the UI can show a meaningful message.
+  const isLiquidity = lastErr instanceof Error && lastErr.message.includes("No liquidity");
+  console.error("quote failed", lastErr instanceof Error ? lastErr.message : lastErr);
+  return Response.json(
+    { error: isLiquidity ? "no_liquidity" : "quote_unavailable" },
+    { status: 502 },
+  );
 }
