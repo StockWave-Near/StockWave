@@ -32,7 +32,7 @@ export const isStockKey = (k: unknown): k is StockKey =>
 // 1Click returns "No liquidity available" for swaps of about $5 or less (checked 13 Nov 2026:
 // $5 fails, $6 and up quotes), so no gift or basket leg may be smaller than this.
 export const MIN_USD = 6;
-export const MAX_USD = 100; // demo cap
+export const MAX_USD = 500;
 // Each basket leg is its own swap, so legs use the same floor.
 export const MIN_LEG_USD = MIN_USD;
 

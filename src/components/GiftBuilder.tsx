@@ -304,12 +304,28 @@ export default function GiftBuilder() {
       <section className="panel" id="send">
         <h2>Send {chosen.name} to a friend</h2>
 
-        <label className="field">Amount</label>
-        <div className="row">
+        <label className="field">Amount (USD)</label>
+        <div className="row" style={{ alignItems: "center" }}>
           {AMOUNTS.map((a) => (
             <button key={a} className="chip" aria-pressed={usd === a} onClick={() => setUsd(a)}>${a}</button>
           ))}
+          <input
+            className="input"
+            type="number"
+            min={6}
+            max={500}
+            step={1}
+            value={usd}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!isNaN(v)) setUsd(v);
+            }}
+            aria-label="Custom amount in USD"
+            style={{ width: 90, margin: 0, textAlign: "center" }}
+          />
         </div>
+        {usd < 6 && <p className="fine" style={{ color: "#c0392b", margin: "4px 0 0" }}>Minimum amount is $6.</p>}
+        {usd > 500 && <p className="fine" style={{ color: "#c0392b", margin: "4px 0 0" }}>Maximum amount is $500.</p>}
 
         <label className="field" htmlFor="note">A short note (optional)</label>
         <input id="note" className="input" maxLength={140} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Happy birthday!" />

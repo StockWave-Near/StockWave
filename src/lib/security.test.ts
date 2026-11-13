@@ -203,8 +203,8 @@ test("D04 MIN_USD is 6 (1Click has no liquidity at $5)", () => {
   assert.ok(5 < MIN_USD && 6 >= MIN_USD);
 });
 
-test("D05 MAX_USD is 100", () => {
-  assert.equal(MAX_USD, 100);
+test("D05 MAX_USD is 500", () => {
+  assert.equal(MAX_USD, 500);
 });
 
 test("D06 isStockKey accepts known keys", () => {
