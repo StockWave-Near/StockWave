@@ -57,6 +57,7 @@ Status: `[x]` done, `[ ]` todo.
 
 ## Shared / last days
 
+- [ ] Baskets: see `BASKETS-PLAN.md` (built, needs a real funded test)
 - [ ] Agent CLI (`stockwave send ...`), stretch (AGT track)
 - [ ] README, diagram, 90-second demo video, repo public
 - [ ] Submit well before 14 Nov 23:59 UTC. Post on X, tag @NEARProtocol and #NEARHackathon
