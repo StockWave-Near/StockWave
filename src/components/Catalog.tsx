@@ -19,7 +19,7 @@ function Row({ a }: { a: OndoAsset }) {
       <StockIcon a={a} size={46} />
       <div className="cmeta">
         <b title={a.name}>{a.name}</b>
-        <small><span className="tick">{a.ticker}</span>{a.category}</small>
+        <small><span className="tick">{a.ticker}</span><span className="cat">{a.category}</span></small>
       </div>
       <div className="cprice"><span>${a.price.toFixed(2)}</span><small>per share</small></div>
       {live ? (

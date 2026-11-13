@@ -180,7 +180,7 @@ a.badge { text-decoration: none; }
 .crow:hover { transform: translateY(-2px); }
 .cmeta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .cmeta b { font: 600 15px var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cmeta small { opacity: .65; font-size: 12px; }
+.cmeta small { opacity: .65; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cprice { font: 600 15px var(--font-num); }
 .badge { font: 600 11px var(--font-num); padding: 5px 10px; border-radius: 999px; background: rgba(44,58,34,.08); opacity: .75; white-space: nowrap; }
 .badge.live { background: var(--moss); color: #f4f6ea; opacity: 1; }
@@ -242,4 +242,20 @@ a.badge { text-decoration: none; }
   .share-row { flex-direction: column; }
   .share-btn { width: 100%; justify-content: center; }
   .link-box { font-size: 12px; }
+}
+
+/* phone width fixes (checked at 390px) */
+.pill, .badge { white-space: nowrap; }
+@media (max-width: 560px) {
+  .nav { gap: 10px; }
+  .nav > .pill { display: none; }
+  .crow { gap: 10px; padding: 12px; }
+  .cmeta b { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
+  .cprice small { display: none; }
+  .tick { margin-right: 0; }
+  .cat { display: none; }
+  .cprice { font-size: 14px; flex: none; }
+  .cmeta b { overflow-wrap: anywhere; }
+  .badge { padding: 5px 8px; }
+  .cmeta small { display: flex; align-items: center; gap: 6px; }
 }
