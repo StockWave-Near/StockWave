@@ -14,7 +14,7 @@ const STOCKS = [
   { key: "TSLA", name: "Tesla", sub: "Tesla Inc.", logo: "/logos/brands/tesla.svg", color: "#CC0000" },
 ] as const;
 type Key = (typeof STOCKS)[number]["key"];
-const AMOUNTS = [5, 10, 20, 50];
+const AMOUNTS = [10, 20, 50];
 
 type Quote = { cached?: boolean; quote?: { quote?: { amountOutFormatted?: string; amountOutUsd?: string; timeEstimate?: number } } };
 

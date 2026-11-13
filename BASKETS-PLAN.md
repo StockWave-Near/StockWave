@@ -29,7 +29,7 @@ The vault contract only handles one token per claim key. Rather than change a de
 
 Minimum per leg is `MIN_LEG_USD` = $6. Real 1Click quotes on 13 Nov returned "No liquidity available" for $5 on Google, Apple and Tesla, and worked from $6. A basket's minimum is the smallest whole-dollar total where every leg still reaches $6 after the split ($19 for Big Tech Trio, because the 33% legs of $18 would be $5.94). A test checks this.
 
-**Open issue found while doing this:** the single-gift builder still offers a $5 chip and `MIN_USD` is $2, so a $5 single gift fails at quote time. Needs a decision: raise `MIN_USD` to 6 and drop the $5 chip. Maximum stays `MAX_USD` ($100) in total.
+The single-gift minimum (`MIN_USD`) was raised to $6 for the same reason, and the $5 chip was removed. Maximum stays `MAX_USD` ($100) in total.
 
 ## Task list
 - [x] Plan (this file)

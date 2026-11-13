@@ -30,6 +30,6 @@ Open http://localhost:3100. If styles look stale after a CSS change, stop the se
 5. Show `/notebook` and the WhatsApp bot reply.
 
 ## Known limits to say out loud
-- Swaps under about $6 get "No liquidity available" from 1Click (checked 13 Nov). Baskets enforce $6 per stock; the single-gift builder still shows a $5 chip that fails.
+- Swaps under about $6 get "No liquidity available" from 1Click (checked 13 Nov). Single gifts and each basket stock have a $6 minimum.
 - A basket needs one USDC payment per stock until one-tap funding is built.
 - Twilio is the sandbox: every recipient must send the join code first.
