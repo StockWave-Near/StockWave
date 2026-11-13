@@ -259,3 +259,6 @@ a.badge { text-decoration: none; }
   .badge { padding: 5px 8px; }
   .cmeta small { display: flex; align-items: center; gap: 6px; }
 }
+
+/* single stock / basket switch */
+.modeswitch { justify-content: center; margin: 4px 0 20px; }

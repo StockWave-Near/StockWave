@@ -4,6 +4,8 @@ import StockIcon from "./StockIcon";
 import ShareButtons from "./ShareButtons";
 import { useState, useEffect, useRef } from "react";
 import { useNearIdentity } from "./NearAuthProvider";
+import BasketBuilder from "./BasketBuilder";
+import { toBase58 } from "@/lib/keys";
 // import { usePrivy } from "@privy-io/react-auth";
 
 const STOCKS = [
@@ -41,6 +43,7 @@ export default function GiftBuilder() {
   const [declared, setDeclared] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [mode, setMode] = useState<"stock" | "basket">("stock");
   const [stage, setStage] = useState<Stage>("build");
   const [pending, setPending] = useState<GiftPending | null>(null);
   const [created, setCreated] = useState<GiftCreated | null>(null);
@@ -269,8 +272,20 @@ export default function GiftBuilder() {
   }
 
   // ── Builder ────────────────────────────────────────────────────────────────
+  const modeSwitch = (
+    <div className="row modeswitch" role="tablist" aria-label="What to send">
+      <button className="chip" role="tab" aria-selected={mode === "stock"} aria-pressed={mode === "stock"} onClick={() => setMode("stock")}>Single stock</button>
+      <button className="chip" role="tab" aria-selected={mode === "basket"} aria-pressed={mode === "basket"} onClick={() => setMode("basket")}>Basket of stocks</button>
+    </div>
+  );
+
+  if (mode === "basket") {
+    return <>{modeSwitch}<BasketBuilder /></>;
+  }
+
   return (
     <>
+      {modeSwitch}
       <div className="cards" id="stocks">
         {STOCKS.map((s) => (
           <button key={s.key} className="card" aria-pressed={stock === s.key} onClick={() => setStock(s.key)}>
@@ -345,22 +360,4 @@ export default function GiftBuilder() {
       </section>
     </>
   );
-}
-
-// ── Base58 encoder (NEAR key format, no external dependency) ──────────────────
-const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-function toBase58(bytes: Uint8Array): string {
-  const digits: number[] = [0];
-  for (const byte of bytes) {
-    let carry = byte;
-    for (let j = 0; j < digits.length; j++) {
-      carry += digits[j] << 8;
-      digits[j] = carry % 58;
-      carry = (carry / 58) | 0;
-    }
-    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
-  }
-  let result = "";
-  for (let i = 0; i < bytes.length && bytes[i] === 0; i++) result += "1";
-  return result + digits.reverse().map((d) => BASE58_ALPHABET[d]).join("");
 }
