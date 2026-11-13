@@ -8,9 +8,9 @@ import StockIcon from "@/components/StockIcon";
 
 // Stock logos map (matches GiftBuilder)
 const STOCK_ICONS: Record<string, { logo: string; color: string }> = {
-  GOOGL: { logo: "https://cdn.simpleicons.org/google/4285F4", color: "#4285F4" },
-  AAPL:  { logo: "https://cdn.simpleicons.org/apple/1d1d1f", color: "#1d1d1f" },
-  TSLA:  { logo: "https://cdn.simpleicons.org/tesla/CC0000", color: "#CC0000" },
+  GOOGL: { logo: "/logos/brands/google.svg", color: "#4285F4" },
+  AAPL:  { logo: "/logos/brands/apple.svg", color: "#1d1d1f" },
+  TSLA:  { logo: "/logos/brands/tesla.svg", color: "#CC0000" },
 };
 
 type GiftInfo = {

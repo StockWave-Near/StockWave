@@ -66,7 +66,7 @@ export default function Home() {
           <p className="lede">One screen, one tap. No jargon, nothing to install.</p>
           <div className="phone" aria-label="Example claim screen">
             <div className="phone-card">
-              <StockIcon a={{ logo: "https://cdn.simpleicons.org/tesla/CC0000", color: "#CC0000", ticker: "TSLA", name: "Tesla" }} size={56} />
+              <StockIcon a={{ logo: "/logos/brands/tesla.svg", color: "#CC0000", ticker: "TSLA", name: "Tesla" }} size={56} />
               <small>You&apos;ve been given</small>
               <strong>$20 of Tesla</strong>
               <em>&ldquo;Happy birthday!&rdquo;</em>

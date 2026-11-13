@@ -7,9 +7,9 @@ import { useNearIdentity } from "./NearAuthProvider";
 // import { usePrivy } from "@privy-io/react-auth";
 
 const STOCKS = [
-  { key: "GOOGL", name: "Google", sub: "Alphabet Class A", logo: "https://cdn.simpleicons.org/google/4285F4", color: "#4285F4" },
-  { key: "AAPL", name: "Apple", sub: "Apple Inc.", logo: "https://cdn.simpleicons.org/apple/1d1d1f", color: "#1d1d1f" },
-  { key: "TSLA", name: "Tesla", sub: "Tesla Inc.", logo: "https://cdn.simpleicons.org/tesla/CC0000", color: "#CC0000" },
+  { key: "GOOGL", name: "Google", sub: "Alphabet Class A", logo: "/logos/brands/google.svg", color: "#4285F4" },
+  { key: "AAPL", name: "Apple", sub: "Apple Inc.", logo: "/logos/brands/apple.svg", color: "#1d1d1f" },
+  { key: "TSLA", name: "Tesla", sub: "Tesla Inc.", logo: "/logos/brands/tesla.svg", color: "#CC0000" },
 ] as const;
 type Key = (typeof STOCKS)[number]["key"];
 const AMOUNTS = [5, 10, 20, 50];

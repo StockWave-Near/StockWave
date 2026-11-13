@@ -17,7 +17,7 @@ export default function StockIcon({ a, size = 56 }: Props) {
       </span>
     );
   }
-  const brand = a.logo.includes("simpleicons.org");
+  const brand = a.logo.startsWith("/logos/brands/");
   return (
     <span className="sicon" style={box}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
