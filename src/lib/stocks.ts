@@ -31,6 +31,9 @@ export const isStockKey = (k: unknown): k is StockKey =>
 
 export const MIN_USD = 2;
 export const MAX_USD = 100; // demo cap
+// 1Click returns "No liquidity available" for swaps of about $5 or less (checked 13 Nov 2026:
+// $5 fails, $6 and up quotes). Each basket leg is its own swap, so legs use this floor.
+export const MIN_LEG_USD = 6;
 
 export function usdToUsdcUnits(usd: number): string {
   return String(Math.round(usd * 10 ** USDC_DECIMALS));

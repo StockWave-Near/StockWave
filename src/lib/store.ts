@@ -17,6 +17,21 @@ export type Gift = {
   amountOut?: string;
   status: "AWAITING_DEPOSIT" | "FUNDED" | "CLAIMED" | "REFUNDED" | "FAILED";
   createdAt: string;
+  /** Set when this gift is one leg of a basket. */
+  basketId?: string;
+};
+
+// A basket groups several gifts (one per stock) behind a single link.
+// Legs are ordinary gifts; the basket only remembers their ids, in link-key order.
+export type Basket = {
+  id: string;
+  basketKey: string;
+  name: string;
+  usd: number;
+  note: string;
+  senderAccount: string;
+  legIds: string[];
+  createdAt: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -90,6 +105,14 @@ export async function saveGift(gift: Gift): Promise<void> {
     }
   }
   await kv.set(`deposit:${gift.depositAddress}`, gift.id);
+}
+
+export async function saveBasket(basket: Basket): Promise<void> {
+  await kv.set(`basket:${basket.id}`, basket);
+}
+
+export async function getBasket(id: string): Promise<Basket | undefined> {
+  return ((await kv.get(`basket:${id}`)) as Basket | null) ?? undefined;
 }
 
 export async function getGift(id: string): Promise<Gift | undefined> {
